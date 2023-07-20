@@ -6,7 +6,7 @@ print('-----------------------------------')
 
 
 # Generating array
-def generating_random_array(row, col):
+def generate_random_array(row, col):
     # Random generating
     return [[randint(-10, 10) for _ in range(col)] for _ in range(row)]
 
@@ -37,7 +37,7 @@ def find_zero(arr, row, col):
 
 
 # Exercise 2
-def sum_of_negative_paired_elements(arr, row, col):
+def find_sum_of_negative_paired_elements(arr, row, col):
     sum_of_elements = [0] * row
     for i in range(row):
         for j in range(col):
@@ -52,7 +52,7 @@ def sum_of_negative_paired_elements(arr, row, col):
 
 n = input('Enter the number of rows: ')
 m = input('Enter the number of columns: ')
-array = generating_random_array(int(n), int(m))
+array = generate_random_array(int(n), int(m))
 print_array(array)
 find_zero(array, int(n), int(m))
-sum_of_negative_paired_elements(array, int(n), int(m))
+find_sum_of_negative_paired_elements(array, int(n), int(m))
