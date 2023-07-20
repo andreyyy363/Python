@@ -23,7 +23,7 @@ def print_array(arr):
 
 
 # Exercise 1
-def find_zero(arr, row, col):
+def find_zero(arr):
     line = 0
     for i in arr:
         line += 1
@@ -72,5 +72,5 @@ n = input('Enter the number of rows: ')
 m = input('Enter the number of columns: ')
 array = generating_random_array(int(n), int(m))
 print_array(array)
-find_zero(array, int(n), int(m))
+find_zero(array)
 get_saddle_points(array, int(n), int(m))
