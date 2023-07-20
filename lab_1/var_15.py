@@ -15,10 +15,8 @@ def generating_random_array(row, col):
 def print_array(arr):
     print('Random array:')
     print('-----------------------------------')
-    for i in arr:
-        for j in i:
-            print(f'{j:4}', end=' ')
-        print()
+    output = '\n'.join([' '.join(f'{j:4}' for j in i) for i in arr])
+    print(output)
     print('-----------------------------------')
 
 
