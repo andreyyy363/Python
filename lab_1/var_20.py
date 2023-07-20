@@ -37,12 +37,11 @@ def find_zero(arr, row, col):
 
             print(f"Found {count} negative elements in series with 0 in {line} line." if found else f"There are no negative elements in series with 0 in {line} line.")
 
-
     print('-----------------------------------')
 
 
 # Exercise 2
-def saddle_points(arr, row, col):
+def get_saddle_points(arr, row, col):
     found = False
     print('Matrix saddle points:')
     for i in range(row):
@@ -74,4 +73,4 @@ m = input('Enter the number of columns: ')
 array = generating_random_array(int(n), int(m))
 print_array(array)
 find_zero(array, int(n), int(m))
-saddle_points(array, int(n), int(m))
+get_saddle_points(array, int(n), int(m))
