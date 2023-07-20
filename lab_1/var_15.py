@@ -23,10 +23,12 @@ def print_array(arr):
 # Exercise 1
 def find_zero(arr, row, col):
     found = False
-    for i in range(row):
-        for j in range(col):
-            if arr[i][j] == 0:
-                print(f"First null element found in  {i + 1} line.")
+    line = 0
+    for i in arr:
+        line += 1
+        for j in i:
+            if j == 0:
+                print(f"First null element found in  {line} line.")
                 found = True
                 break
         if found:
