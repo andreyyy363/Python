@@ -21,7 +21,7 @@ def print_array(arr):
 
 
 # Exercise 1
-def find_zero(arr, row, col):
+def find_zero(arr):
     found = False
     line = 0
     for i in arr:
@@ -39,12 +39,12 @@ def find_zero(arr, row, col):
 
 
 # Exercise 2
-def find_sum_of_negative_paired_elements(arr, row, col):
-    sum_of_elements = [0] * row
-    for i in range(row):
-        for j in range(col):
-            if arr[i][j] < 0 and arr[i][j] % 2 == 0:
-                sum_of_elements[i] += arr[i][j]
+def find_sum_of_negative_paired_elements(arr):
+    sum_of_elements = []
+    for i in arr:
+        for j in i:
+            if j < 0 and j % 2 == 0:
+                sum_of_elements.append(j)
 
     sum_of_elements.sort()
     print('Sum of even negative elements\narranged in descending order:')
@@ -56,5 +56,5 @@ n = input('Enter the number of rows: ')
 m = input('Enter the number of columns: ')
 array = generate_random_array(int(n), int(m))
 print_array(array)
-find_zero(array, int(n), int(m))
-find_sum_of_negative_paired_elements(array, int(n), int(m))
+find_zero(array)
+find_sum_of_negative_paired_elements(array)
