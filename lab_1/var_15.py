@@ -1,4 +1,5 @@
 from random import randint
+
 print('Lab_1')
 print('Var_15')
 print('-----------------------------------')
@@ -7,8 +8,7 @@ print('-----------------------------------')
 # Generating array
 def generating_random_array(row, col):
     # Random generating
-    arr = [[randint(-10, 10) for _ in range(col)] for _ in range(row)]
-    return arr
+    return [[randint(-10, 10) for _ in range(col)] for _ in range(row)]
 
 
 # Printing array
