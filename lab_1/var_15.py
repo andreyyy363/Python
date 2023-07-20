@@ -26,7 +26,7 @@ def find_zero(arr, row, col):
     for i in range(row):
         for j in range(col):
             if arr[i][j] == 0:
-                print('First null element found in ', i + 1, ' line.')
+                print(f"First null element found in  {i + 1} line.")
                 found = True
                 break
         if found:
