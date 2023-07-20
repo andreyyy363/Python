@@ -1,3 +1,5 @@
+from random import randint
+
 print('Lab_1')
 print('Var_20')
 print('-----------------------------------')
@@ -6,9 +8,7 @@ print('-----------------------------------')
 # Generating array
 def generating_random_array(row, col):
     # Random generating
-    from random import randint
-    arr = [[randint(-10, 10) for _ in range(col)] for _ in range(row)]
-    return arr
+    return [[randint(-10, 10) for _ in range(col)] for _ in range(row)]
 
 
 # Printing array
@@ -24,18 +24,20 @@ def print_array(arr):
 
 # Exercise 1
 def find_zero(arr, row, col):
-    for i in range(row):
+    line = 0
+    for i in arr:
+        line += 1
         count = 0
         found = False
-        for j in range(col):
-            if arr[i][j] == 0:
+        for j in i:
+            if j == 0:
                 found = True
-            if arr[i][j] < 0:
+            if j < 0:
                 count += 1
         if found:
-            print('Found', count, 'negative elements in series with 0 in', i + 1, 'line.')
+            print(f"Found {count} negative elements in series with 0 in {line} line.")
         else:
-            print('There are no negative elements in series with 0 in', i + 1, 'line.')
+            print(f"There are no negative elements in series with 0 in {line} line.")
 
     print('-----------------------------------')
 
