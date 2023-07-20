@@ -34,10 +34,9 @@ def find_zero(arr, row, col):
                 found = True
             if j < 0:
                 count += 1
-        if found:
-            print(f"Found {count} negative elements in series with 0 in {line} line.")
-        else:
-            print(f"There are no negative elements in series with 0 in {line} line.")
+
+            print(f"Found {count} negative elements in series with 0 in {line} line." if found else f"There are no negative elements in series with 0 in {line} line.")
+
 
     print('-----------------------------------')
 
