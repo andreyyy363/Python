@@ -16,9 +16,8 @@ class MovieData:
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMTI3NGFmYTRlNTUyMjRjYzRlN2Q0NmNlMTNkOTZjOSIsInN1YiI6IjVkNmZhMWZmNzdjMDFmMDAxMDU5NzQ4OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.lbpgyXlOXwrbY0mUmP-zQpNAMCw_h-oaudAJB6Cn5c8'
     }
 
-    def __init__(self):
-        pages = input("Please, enter the number of pages you want to work with: ")
-        self.pages = int(pages)
+    def __init__(self, numb_of_pages):
+        self.pages = numb_of_pages
 
     def fetch_some_data(self, print_with_indexes):
         params = {'page': 1}
@@ -290,6 +289,6 @@ class MovieData:
 
 print('Lab_2')
 print('-----------------------------------------------------------------------------------------------')
-
-movies = MovieData()
+pages = input("Please, enter the number of pages you want to work with: ")
+movies = MovieData(int(pages))
 movies.choose_action()
