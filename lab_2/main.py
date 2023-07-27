@@ -229,9 +229,10 @@ class MovieData:
         print('Successful!')
 
     def print_menu(self):
-        print('-' * 95)
+        stripes = '-' * 95
+        print(stripes)
         print('Actions with the movie database:')
-        print('-' * 95)
+        print(stripes)
         print('[1]  - Fetch the data from desired amount of pages.')
         print('[2]  - Fetch all data.')
         print('[3]  - Fetch all data about movies with indexes from 3 till 19 with step 4.')
@@ -244,47 +245,37 @@ class MovieData:
         print('[10] - Return and copy initial data where first id in list of film genres was replaced with 22.')
         print('[11] - Get collection of structures with part of initial data and write it to a csv file.')
         print('[12] - Stop program.')
-        print('-' * 95)
+        print(stripes)
 
     def choose_action(self):
         while True:
             self.print_menu()
             choice = input('Please, enter your choice: ')
-            if int(choice) == 1:
-                self.fetch_some_data(False)
-
-            elif int(choice) == 2:
-                self.fetch_all_data()
-
-            elif int(choice) == 3:
-                self.fetch_some_data(True)
-
-            elif int(choice) == 4:
-                self.find_popular_title()
-
-            elif int(choice) == 5:
-                self.find_film_with_keyword()
-
-            elif int(choice) == 6:
-                self.get_unique_collections()
-
-            elif int(choice) == 7:
-                self.delete_films_with_genre()
-
-            elif int(choice) == 8:
-                self.find_most_popular_genre()
-
-            elif int(choice) == 9:
-                self.get_grouped_film_collection()
-
-            elif int(choice) == 10:
-                self.get_copy_and_modified_copy()
-
-            elif int(choice) == 11:
-                self.save_some_data_to_file(self.get_some_data_to_file())
-
-            elif int(choice) == 12:
-                break
+            match int(choice):
+                case 1:
+                    self.fetch_some_data(False)
+                case 2:
+                    self.fetch_all_data()
+                case 3:
+                    self.fetch_some_data(True)
+                case 4:
+                    self.find_popular_title()
+                case 5:
+                    self.find_film_with_keyword()
+                case 6:
+                    self.get_unique_collections()
+                case 7:
+                    self.delete_films_with_genre()
+                case 8:
+                    self.find_most_popular_genre()
+                case 9:
+                    self.get_grouped_film_collection()
+                case 10:
+                    self.get_copy_and_modified_copy()
+                case 11:
+                    self.save_some_data_to_file(self.get_some_data_to_file())
+                case 12:
+                    break
 
 
 print('Lab_2')
