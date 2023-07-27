@@ -8,12 +8,12 @@ from collections import Counter
 
 
 class MovieData:
-    genre_url = 'https://api.themoviedb.org/3/genre/movie/list?language=en'
-    data_url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&sort_by" \
-               "=popularity.desc&page={!!!!}"
+    api_path = 'https://api.themoviedb.org/3'
+    genre_url = f'{api_path}/genre/movie/list?language=en'
+    data_url = api_path + '/discover/movie?include_adult=false&include_video=false&sort_by=popularity.desc&page={!!!!}'
     headers = {
-        "accept": "application/json",
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMTI3NGFmYTRlNTUyMjRjYzRlN2Q0NmNlMTNkOTZjOSIsInN1YiI6IjVkNmZhMWZmNzdjMDFmMDAxMDU5NzQ4OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.lbpgyXlOXwrbY0mUmP-zQpNAMCw_h-oaudAJB6Cn5c8"
+        'accept': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMTI3NGFmYTRlNTUyMjRjYzRlN2Q0NmNlMTNkOTZjOSIsInN1YiI6IjVkNmZhMWZmNzdjMDFmMDAxMDU5NzQ4OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.lbpgyXlOXwrbY0mUmP-zQpNAMCw_h-oaudAJB6Cn5c8'
     }
 
     def __init__(self):
