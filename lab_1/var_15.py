@@ -1,8 +1,9 @@
 from random import randint
 
-print('Lab_1')
-print('Var_15')
-print('-----------------------------------')
+def print_info():
+    print('Lab_1')
+    print('Var_15')
+    print('-----------------------------------')
 
 
 # Generating array
@@ -28,7 +29,7 @@ def find_zero(arr):
         line += 1
         for j in i:
             if j == 0:
-                print(f"First null element found in  {line} line.")
+                print(f'First null element found in  {line} line.')
                 found = True
                 break
         if found:
@@ -52,6 +53,7 @@ def find_sum_of_negative_paired_elements(arr):
     print('-----------------------------------')
 
 
+print_info()
 n = input('Enter the number of rows: ')
 m = input('Enter the number of columns: ')
 array = generate_random_array(int(n), int(m))
