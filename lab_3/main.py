@@ -51,7 +51,7 @@ class UserData:
         This function downloads user data from the specified API endpoint in CSV format
         and saves it to the destination path provided in the command line arguments.
         """
-        url = 'https://randomuser.me/api/?format=csv&results=100'
+        url = 'https://randomuser.me/api/?format=csv&results=5000'
         urllib.request.urlretrieve(url, self.destination)
         logging.info(f'File successfully downloaded from {url} and saved to {self.destination}')
 
@@ -79,18 +79,17 @@ class UserData:
         to filter data by gender, or an integer value to filter data by the number of rows.
         """
         # Filter by gender
-        if self.args.gender.lower() == 'male':
-            self.sorted_data = sorted(self.data, key=lambda x: x['gender'], reverse=True)
-        elif self.args.gender.lower() == 'female':
-            self.sorted_data = sorted(self.data, key=lambda x: x['gender'], reverse=False)
+        if self.args.numb_of_rows is None:
+            reverse = True if self.args.gender.lower() == 'male' else \
+                False if self.args.gender.lower() == 'female' else None
+            self.sorted_data = sorted(self.data, key=lambda x: x['gender'], reverse=reverse)
 
         # Filter by number of rows
-        else:
-            self.sorted_data = self.data[:int(self.args.sort)]
+        elif self.args.gender is None:
+            self.sorted_data = self.data[:self.args.numb_of_rows]
 
-        # logging.info(f'Data successfully sorted by '
-        #              f'{self.args.sort.lower()} {"rows" if self.args.sort.isdigit() else "gender"}.')
-        # logging.debug(f'Sorted data: {self.sorted_data}')
+        logging.info(f'Data successfully sorted by {"rows" if self.args.gender is None else "gender"}.')
+        logging.debug(f'Sorted data: {self.sorted_data}')
 
     def add_and_change_some_data(self):
         """
