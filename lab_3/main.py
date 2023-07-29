@@ -11,18 +11,27 @@ import pytz
 class UserData:
     """ Class to work with user database """
     def __init__(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--destination', type=str, required=True)
-        parser.add_argument('--filename', type=str, default='output')
-        parser.add_argument('--sort')
-        parser.add_argument('--log_level', type=str)
-        self.args = parser.parse_args()
+        self.args = self.setting_argparse()
         self.destination = f'{self.args.destination}{self.args.filename}.csv'
         self.new_path = fr'{self.args.destination}\Data'
         self.data = []
-        self.fieldnames = []
+        self.fieldnames = None
         self.sorted_data = []
         self.rearranged_data = {}
+
+    def setting_argparse(self):
+        """
+        Parses the command-line arguments using the `argparse` module.
+        :return parser.parse_args(): an object containing the parsed command-line arguments
+        """
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--destination', type=str, required=True)
+        parser.add_argument('--filename', type=str, default='output')
+        sort_type = parser.add_mutually_exclusive_group()
+        sort_type.add_argument("--gender", type=str)
+        sort_type.add_argument("--numb_of_rows", type=int)
+        parser.add_argument('log_level', type=str)
+        return parser.parse_args()
 
     def configure_logger(self):
         """
@@ -30,7 +39,6 @@ class UserData:
         This function sets up the logging configuration based on the log level provided
         in the command line arguments.
         """
-
         log_level = self.args.log_level.upper()
         logging.basicConfig(filename='file.log',
                             level=getattr(logging, log_level, logging.INFO),
@@ -43,8 +51,7 @@ class UserData:
         This function downloads user data from the specified API endpoint in CSV format
         and saves it to the destination path provided in the command line arguments.
         """
-
-        url = 'https://randomuser.me/api/?format=csv&results=5000'
+        url = 'https://randomuser.me/api/?format=csv&results=100'
         urllib.request.urlretrieve(url, self.destination)
         logging.info(f'File successfully downloaded from {url} and saved to {self.destination}')
 
@@ -55,7 +62,6 @@ class UserData:
         attribute of the object. The data is stored as a list of dictionaries, with each
         dictionary representing a row in the CSV file.
         """
-
         with open(self.destination, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             self.fieldnames = reader.fieldnames
@@ -72,20 +78,19 @@ class UserData:
         through the command-line arguments. The sorting criteria can be either 'male' or 'female'
         to filter data by gender, or an integer value to filter data by the number of rows.
         """
-
         # Filter by gender
-        if self.args.sort.lower() == 'male':
+        if self.args.gender.lower() == 'male':
             self.sorted_data = sorted(self.data, key=lambda x: x['gender'], reverse=True)
-        elif self.args.sort.lower() == 'female':
+        elif self.args.gender.lower() == 'female':
             self.sorted_data = sorted(self.data, key=lambda x: x['gender'], reverse=False)
 
         # Filter by number of rows
-        elif self.args.sort.isdigit():
+        else:
             self.sorted_data = self.data[:int(self.args.sort)]
 
-        logging.info(f'Data successfully sorted by '
-                     f'{self.args.sort.lower()} {"rows" if self.args.sort.isdigit() else "gender"}.')
-        logging.debug(f'Sorted data: {self.sorted_data}')
+        # logging.info(f'Data successfully sorted by '
+        #              f'{self.args.sort.lower()} {"rows" if self.args.sort.isdigit() else "gender"}.')
+        # logging.debug(f'Sorted data: {self.sorted_data}')
 
     def add_and_change_some_data(self):
         """
@@ -93,7 +98,6 @@ class UserData:
         adds the 'current.time' column with the current time adjusted by the user's timezone, and performs
         some transformations on certain columns such as 'name.title', 'dob.date', and 'registered.date'.
         """
-
         # Add global index
         self.fieldnames.append('global.index')
         self.fieldnames.append('current.time')
@@ -137,7 +141,6 @@ class UserData:
 
     def save_data_to_csv(self):
         """ This method saves the sorted data to a CSV file at the destination. """
-
         with open(self.destination, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
             writer.writeheader()
@@ -225,7 +228,6 @@ class UserData:
         :param path: the path to the root folder from which the traversal begins
         :param numb_of_tabs: the number of tabs used for formatting the output
         """
-
         tab = '\t' * numb_of_tabs
         for i in os.listdir(path):
             i_path = os.path.join(path, i)
