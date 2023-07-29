@@ -11,13 +11,6 @@ import pytz
 class UserData:
     """ Class to work with user database """
     def __init__(self):
-        """
-        Initializes an instance of UserData class.
-        This constructor sets up the argument parser and parses the command line arguments.
-        It also initializes various instance variables used for data processing.
-
-        :param None:
-        """
         parser = argparse.ArgumentParser()
         parser.add_argument('--destination', type=str, required=True)
         parser.add_argument('--filename', type=str, default='output')
@@ -36,9 +29,8 @@ class UserData:
         Configures the logger for the class instance.
         This function sets up the logging configuration based on the log level provided
         in the command line arguments.
-
-        :return:
         """
+
         log_level = self.args.log_level.upper()
         logging.basicConfig(filename='file.log',
                             level=getattr(logging, log_level, logging.INFO),
@@ -50,9 +42,8 @@ class UserData:
         Downloads user data from a remote API and saves it to a CSV file.
         This function downloads user data from the specified API endpoint in CSV format
         and saves it to the destination path provided in the command line arguments.
-
-        :return:
         """
+
         url = 'https://randomuser.me/api/?format=csv&results=5000'
         urllib.request.urlretrieve(url, self.destination)
         logging.info(f'File successfully downloaded from {url} and saved to {self.destination}')
@@ -63,9 +54,8 @@ class UserData:
         This function reads user data from the CSV file specified by the 'destination'
         attribute of the object. The data is stored as a list of dictionaries, with each
         dictionary representing a row in the CSV file.
-
-        :return:
         """
+
         with open(self.destination, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             self.fieldnames = reader.fieldnames
@@ -81,8 +71,6 @@ class UserData:
         This function sorts the user data based on the sorting criteria provided by the user
         through the command-line arguments. The sorting criteria can be either 'male' or 'female'
         to filter data by gender, or an integer value to filter data by the number of rows.
-
-        :return:
         """
 
         # Filter by gender
@@ -104,8 +92,6 @@ class UserData:
         This method adds new columns to the data, fills the 'global.index' column with incremental indices,
         adds the 'current.time' column with the current time adjusted by the user's timezone, and performs
         some transformations on certain columns such as 'name.title', 'dob.date', and 'registered.date'.
-
-        :return:
         """
 
         # Add global index
@@ -150,11 +136,8 @@ class UserData:
         logging.debug(f'Changed sorted data: {self.sorted_data}')
 
     def save_data_to_csv(self):
-        """
-        This method saves the sorted data to a CSV file at the destination.
+        """ This method saves the sorted data to a CSV file at the destination. """
 
-        :return:
-        """
         with open(self.destination, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
             writer.writeheader()
@@ -164,11 +147,8 @@ class UserData:
         logging.info(f'The sorted data was successfully saved to {self.destination}.')
 
     def create_new_working_dir(self):
-        """
-        This method creates a new working directory and moves the sorted data file to that directory.
+        """ This method creates a new working directory and moves the sorted data file to that directory. """
 
-        :return:
-        """
         os.mkdir(fr'{self.args.destination}\Data')
         logging.info(f'The new folder was successfully created. His full path {self.new_path}')
         shutil.move(self.destination, self.new_path)
@@ -177,11 +157,7 @@ class UserData:
         logging.info(f'New working directory: {self.new_path}')
 
     def rearrange_the_data(self):
-        """
-        This method rearranges the sorted data into a new format, grouped by decade and country.
-
-        :return:
-        """
+        """ This method rearranges the sorted data into a new format, grouped by decade and country. """
         for i in self.sorted_data:
             dob_date = datetime.strptime(i['dob.date'], '%m/%d/%Y')
             decade = f'{dob_date.year // 10 * 10}-th'
@@ -202,9 +178,8 @@ class UserData:
 
     def create_sub_folders_and_save_some_data(self):
         """
-        This method creates sub folders for each decade and country and saves specific data for each group in CSV files.
-
-        :return:
+        This method creates sub folders for each decade and country and saves specific data
+        for each group in CSV files.
         """
         id_names = []
         for decade, decade_data in self.rearranged_data.items():
@@ -234,11 +209,7 @@ class UserData:
                 logging.info(f'File {file_name} created in {file_path}')
 
     def delete_decades_before_1960th(self):
-        """
-        This method deletes all folders with a decade before the 1960s in the Data folder.
-
-        :return:
-        """
+        """ This method deletes all folders with a decade before the 1960s in the Data folder. """
         for i in os.listdir(fr'{self.new_path}'):
             if os.path.isdir(fr'{self.new_path}\{i}'):
                 decade = int(i.split('-')[0])
@@ -251,10 +222,10 @@ class UserData:
         """
         This method logs the full folder structure with indentation.
 
-        :param path:
-        :param numb_of_tabs:
-        :return:
+        :param path: the path to the root folder from which the traversal begins
+        :param numb_of_tabs: the number of tabs used for formatting the output
         """
+
         tab = '\t' * numb_of_tabs
         for i in os.listdir(path):
             i_path = os.path.join(path, i)
@@ -265,11 +236,7 @@ class UserData:
                 logging.info(f'{tab}File: {i}')
 
     def save_all_data_to_zip(self):
-        """
-        This method saves all data in the 'new_path' directory to a ZIP archive.
-
-        :return:
-        """
+        """ This method saves all data in the 'new_path' directory to a ZIP archive. """
         os.chdir(self.args.destination)
         shutil.make_archive('data', 'zip', fr'{self.new_path}')
 
