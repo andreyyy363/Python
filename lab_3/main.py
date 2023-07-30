@@ -95,49 +95,60 @@ class UserData:
         self.logger.info(f'Data successfully sorted by {"rows" if self.args.gender is None else "gender"}.')
         self.logger.debug(f'Sorted data: {self.sorted_data}')
 
-    def add_and_change_some_data(self):
+    def add_index_to_sorted_data(self):
+        # Add global index
+        for i, row in enumerate(self.sorted_data, start=1):
+            row['global.index'] = i
+        self.logger.info('Column "global.index" filled successfully.')
+
+    def add_current_time_to_sorted_data(self, i):
+        # Add current time
+        timezone_str = i['location.timezone.offset']
+        hours, minutes = map(int, timezone_str.split(':'))
+        i['current.time'] = timedelta(hours=hours, minutes=minutes) + datetime.now(pytz.utc)
+        self.logger.debug(f'Current time of user {i["login.username"]} is {i["current.time"]}.')
+
+    def change_title_name_in_sorted_data(self, i):
+        # Change name.title
+        if i['name.title'] == 'Mr':
+            i['name.title'] = 'Mister'
+        elif i['name.title'] == 'Ms':
+            i['name.title'] = 'Miss'
+        elif i['name.title'] == 'Mrs':
+            i['name.title'] = 'Missis'
+        elif i['name.title'] == 'Madame':
+            i['name.title'] = 'Mademoiselle'
+        self.logger.debug(f'Name title for user {i["login.username"]} has been changed to {i["name.title"]}.')
+
+    def convert_date_in_sorted_data(self, i):
+        # Convert dob.date
+        dob_date = datetime.fromisoformat(i['dob.date'].replace('Z', '+00:00'))
+        i['dob.date'] = dob_date.strftime('%m/%d/%Y')
+
+        self.logger.debug(f'Dob date for user {i["login.username"]} has been converted to {i["dob.date"]}.')
+
+        # Convert registered.date
+        register_datetime = datetime.fromisoformat(i['registered.date'].replace('Z', '+00:00'))
+        i['registered.date'] = register_datetime.strftime('%m-%d-%Y, %H:%M:%S')
+
+        self.logger.debug(f'Register date for user {i["login.username"]} '
+                          f'has been converted to {i["registered.date"]}.')
+
+    def update_some_data(self):
         """
         This method adds new columns to the data, fills the 'global.index' column with incremental indices,
         adds the 'current.time' column with the current time adjusted by the user's timezone, and performs
         some transformations on certain columns such as 'name.title', 'dob.date', and 'registered.date'.
         """
-        # Add global index
         self.fieldnames.append('global.index')
         self.fieldnames.append('current.time')
         self.logger.info('New columns added to fieldnames.')
 
-        for i, row in enumerate(self.sorted_data, start=1):
-            row['global.index'] = i
-        self.logger.info('Column "global.index" filled successfully.')
-
+        self.add_index_to_sorted_data()
         for i in self.sorted_data:
-            # Add current time
-            timezone_str = i['location.timezone.offset']
-            hours, minutes = map(int, timezone_str.split(':'))
-            i['current.time'] = timedelta(hours=hours, minutes=minutes) + datetime.now(pytz.utc)
-            self.logger.debug(f'Current time of user {i["login.username"]} is {i["current.time"]}.')
-
-            # Change name.title
-            if i['name.title'] == 'Mr':
-                i['name.title'] = 'Mister'
-            elif i['name.title'] == 'Ms':
-                i['name.title'] = 'Miss'
-            elif i['name.title'] == 'Mrs':
-                i['name.title'] = 'Missis'
-            elif i['name.title'] == 'Madame':
-                i['name.title'] = 'Mademoiselle'
-            self.logger.debug(f'Name title for user {i["login.username"]} has been changed to {i["name.title"]}.')
-
-            # Convert dob.date
-            dob_date = datetime.fromisoformat(i['dob.date'].replace('Z', '+00:00'))
-            i['dob.date'] = dob_date.strftime('%m/%d/%Y')
-            self.logger.debug(f'Dob date for user {i["login.username"]} has been converted to {i["dob.date"]}.')
-
-            # Convert registered.date
-            register_datetime = datetime.fromisoformat(i['registered.date'].replace('Z', '+00:00'))
-            i['registered.date'] = register_datetime.strftime('%m-%d-%Y, %H:%M:%S')
-            self.logger.debug(f'Register date for user {i["login.username"]} '
-                              f'has been converted to {i["registered.date"]}.')
+            self.add_current_time_to_sorted_data(i)
+            self.change_title_name_in_sorted_data(i)
+            self.convert_date_in_sorted_data(i)
 
         self.logger.info('The sorted data was successfully modified.')
         self.logger.debug(f'Fieldnames with new columns in data: {self.fieldnames}')
@@ -257,7 +268,7 @@ if __name__ == '__main__':
     # (4) Sorting data by key
     user_data.sort_data()
     # (5) Adding some fields to the file and saving data to csv
-    user_data.add_and_change_some_data()
+    user_data.update_some_data()
     user_data.save_data_to_csv()
     # (6-7) Creating a new directory and assigning it to a working directory
     user_data.create_new_working_dir()
