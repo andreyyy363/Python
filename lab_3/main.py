@@ -11,7 +11,7 @@ from collections import Counter
 
 class UserData:
     """ Class to work with user database """
-    URL = 'https://randomuser.me/api/?format=csv&results=100'
+    URL = 'https://randomuser.me/api/?format=csv&results=5000'
     
     def __init__(self):
         self.args = self.setting_argparse()
@@ -212,8 +212,7 @@ class UserData:
         popular_id = self.find_most_popular_id(users_data)
 
         file_name = f'max_age_{max_age}_avg_registered_{avg_registered}_popular_id_{popular_id}.csv'
-        country_path = os.path.join(decade, country)
-        file_path = os.path.join(country_path, file_name)
+        file_path = os.path.join(decade, country, file_name)
         return file_name, file_path
 
     def create_sub_folders_with_data(self):
