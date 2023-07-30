@@ -110,14 +110,15 @@ class UserData:
 
     def change_title_name_in_sorted_data(self, i):
         # Change name.title
-        if i['name.title'] == 'Mr':
-            i['name.title'] = 'Mister'
-        elif i['name.title'] == 'Ms':
-            i['name.title'] = 'Miss'
-        elif i['name.title'] == 'Mrs':
-            i['name.title'] = 'Missis'
-        elif i['name.title'] == 'Madame':
-            i['name.title'] = 'Mademoiselle'
+        match i['name.title']:
+            case 'Mr':
+                i['name.title'] = 'Mister'
+            case 'Ms':
+                i['name.title'] = 'Miss'
+            case 'Mrs':
+                i['name.title'] = 'Missis'
+            case 'Madame':
+                i['name.title'] = 'Mademoiselle'
         self.logger.debug(f'Name title for user {i["login.username"]} has been changed to {i["name.title"]}.')
 
     def convert_date_in_sorted_data(self, i):
