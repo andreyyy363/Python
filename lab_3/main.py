@@ -12,6 +12,7 @@ class UserData:
     """ Class to work with user database """
     def __init__(self):
         self.args = self.setting_argparse()
+        self.logger = self.get_logger()
         self.destination = f'{self.args.destination}{self.args.filename}.csv'
         self.new_path = fr'{self.args.destination}\Data'
         self.data = []
@@ -28,22 +29,24 @@ class UserData:
         parser.add_argument('--destination', type=str, required=True)
         parser.add_argument('--filename', type=str, default='output')
         sort_type = parser.add_mutually_exclusive_group()
-        sort_type.add_argument("--gender", type=str)
-        sort_type.add_argument("--numb_of_rows", type=int)
+        sort_type.add_argument('--gender', type=str)
+        sort_type.add_argument('--numb_of_rows', type=int)
         parser.add_argument('log_level', type=str)
         return parser.parse_args()
 
-    def configure_logger(self):
+    def get_logger(self):
         """
-        Configures the logger for the class instance.
-        This function sets up the logging configuration based on the log level provided
-        in the command line arguments.
+        Create and configure a logger for logging application events.
+        :return logger:  a logger instance configured for logging
         """
-        log_level = self.args.log_level.upper()
-        logging.basicConfig(filename='file.log',
-                            level=getattr(logging, log_level, logging.INFO),
-                            format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-        logging.debug(self.args)
+        logger = logging.getLogger('logger')
+        logger.setLevel(self.args.log_level.upper())
+        file_handler = logging.FileHandler('file.log', encoding='utf-8')
+        file_handler.setLevel(self.args.log_level.upper())
+        formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        return logger
 
     def download_user_data(self):
         """
@@ -51,9 +54,9 @@ class UserData:
         This function downloads user data from the specified API endpoint in CSV format
         and saves it to the destination path provided in the command line arguments.
         """
-        url = 'https://randomuser.me/api/?format=csv&results=5000'
+        url = 'https://randomuser.me/api/?format=csv&results=100'
         urllib.request.urlretrieve(url, self.destination)
-        logging.info(f'File successfully downloaded from {url} and saved to {self.destination}')
+        self.logger.info(f'File successfully downloaded from {url} and saved to {self.destination}')
 
     def get_user_data_from_csv(self):
         """
@@ -67,9 +70,9 @@ class UserData:
             self.fieldnames = reader.fieldnames
             for row in reader:
                 self.data.append(row)
-        logging.info('Data successfully read from the file.')
-        logging.debug(f'Fieldnames in data: {self.fieldnames}')
-        logging.debug(f'Received data from the file: {self.data}')
+        self.logger.info('Data successfully read from the file.')
+        self.logger.debug(f'Fieldnames in data: {self.fieldnames}')
+        self.logger.debug(f'Received data from the file: {self.data}')
 
     def sort_data(self):
         """
@@ -88,8 +91,8 @@ class UserData:
         elif self.args.gender is None:
             self.sorted_data = self.data[:self.args.numb_of_rows]
 
-        logging.info(f'Data successfully sorted by {"rows" if self.args.gender is None else "gender"}.')
-        logging.debug(f'Sorted data: {self.sorted_data}')
+        self.logger.info(f'Data successfully sorted by {"rows" if self.args.gender is None else "gender"}.')
+        self.logger.debug(f'Sorted data: {self.sorted_data}')
 
     def add_and_change_some_data(self):
         """
@@ -100,18 +103,18 @@ class UserData:
         # Add global index
         self.fieldnames.append('global.index')
         self.fieldnames.append('current.time')
-        logging.info('New columns added to fieldnames.')
+        self.logger.info('New columns added to fieldnames.')
 
         for i, row in enumerate(self.sorted_data, start=1):
             row['global.index'] = i
-        logging.info('Column "global.index" filled successfully.')
+        self.logger.info('Column "global.index" filled successfully.')
 
         for i in self.sorted_data:
             # Add current time
             timezone_str = i['location.timezone.offset']
             hours, minutes = map(int, timezone_str.split(':'))
             i['current.time'] = timedelta(hours=hours, minutes=minutes) + datetime.now(pytz.utc)
-            logging.debug(f'Current time of user {i["login.username"]} is {i["current.time"]}.')
+            self.logger.debug(f'Current time of user {i["login.username"]} is {i["current.time"]}.')
 
             # Change name.title
             if i['name.title'] == 'Mr':
@@ -122,21 +125,22 @@ class UserData:
                 i['name.title'] = 'Missis'
             elif i['name.title'] == 'Madame':
                 i['name.title'] = 'Mademoiselle'
-            logging.debug(f'Name title for user {i["login.username"]} has been changed to {i["name.title"]}.')
+            self.logger.debug(f'Name title for user {i["login.username"]} has been changed to {i["name.title"]}.')
 
             # Convert dob.date
             dob_date = datetime.fromisoformat(i['dob.date'].replace('Z', '+00:00'))
             i['dob.date'] = dob_date.strftime('%m/%d/%Y')
-            logging.debug(f'Dob date for user {i["login.username"]} has been converted to {i["dob.date"]}.')
+            self.logger.debug(f'Dob date for user {i["login.username"]} has been converted to {i["dob.date"]}.')
 
             # Convert registered.date
             register_datetime = datetime.fromisoformat(i['registered.date'].replace('Z', '+00:00'))
             i['registered.date'] = register_datetime.strftime('%m-%d-%Y, %H:%M:%S')
-            logging.debug(f'Register date for user {i["login.username"]} has been converted to {i["registered.date"]}.')
+            self.logger.debug(f'Register date for user {i["login.username"]} '
+                              f'has been converted to {i["registered.date"]}.')
 
-        logging.info('The sorted data was successfully modified.')
-        logging.debug(f'Fieldnames with new columns in data: {self.fieldnames}')
-        logging.debug(f'Changed sorted data: {self.sorted_data}')
+        self.logger.info('The sorted data was successfully modified.')
+        self.logger.debug(f'Fieldnames with new columns in data: {self.fieldnames}')
+        self.logger.debug(f'Changed sorted data: {self.sorted_data}')
 
     def save_data_to_csv(self):
         """ This method saves the sorted data to a CSV file at the destination. """
@@ -146,17 +150,17 @@ class UserData:
             for row in self.sorted_data:
                 writer.writerow(row)
 
-        logging.info(f'The sorted data was successfully saved to {self.destination}.')
+        self.logger.info(f'The sorted data was successfully saved to {self.destination}.')
 
     def create_new_working_dir(self):
         """ This method creates a new working directory and moves the sorted data file to that directory. """
 
         os.mkdir(fr'{self.args.destination}\Data')
-        logging.info(f'The new folder was successfully created. His full path {self.new_path}')
+        self.logger.info(f'The new folder was successfully created. His full path {self.new_path}')
         shutil.move(self.destination, self.new_path)
-        logging.info(f'File with sorted data moved to {self.new_path}')
+        self.logger.info(f'File with sorted data moved to {self.new_path}')
         os.chdir(self.new_path)
-        logging.info(f'New working directory: {self.new_path}')
+        self.logger.info(f'New working directory: {self.new_path}')
 
     def rearrange_the_data(self):
         """ This method rearranges the sorted data into a new format, grouped by decade and country. """
@@ -175,8 +179,8 @@ class UserData:
                 self.rearranged_data[decade][country] = sorted(data, key=lambda x: (x['dob.date'],
                                                                                     x['location.country']))
 
-        logging.info('The sorted date was successfully rebuilt to the new format.')
-        logging.debug(f'Rearranged data: {self.rearranged_data}')
+        self.logger.info('The sorted date was successfully rebuilt to the new format.')
+        self.logger.debug(f'Rearranged data: {self.rearranged_data}')
 
     def create_sub_folders_and_save_some_data(self):
         """
@@ -208,7 +212,7 @@ class UserData:
                     writer.writeheader()
                     writer.writerows(users_data)
 
-                logging.info(f'File {file_name} created in {file_path}')
+                self.logger.info(f'File {file_name} created in {file_path}')
 
     def delete_decades_before_1960th(self):
         """ This method deletes all folders with a decade before the 1960s in the Data folder. """
@@ -217,8 +221,8 @@ class UserData:
                 decade = int(i.split('-')[0])
                 if decade < 1960:
                     shutil.rmtree(fr'{self.new_path}\{i}')
-                    logging.debug(fr'The folder has been deleted in the path: {self.new_path}\{i}')
-        logging.info('All folders with a decade before the 1960s have been deleted.')
+                    self.logger.debug(fr'The folder has been deleted in the path: {self.new_path}\{i}')
+        self.logger.info('All folders with a decade before the 1960s have been deleted.')
 
     def log_full_folder_structure(self, path, numb_of_tabs=0):
         """
@@ -231,10 +235,10 @@ class UserData:
         for i in os.listdir(path):
             i_path = os.path.join(path, i)
             if os.path.isdir(i_path):
-                logging.info(f'{tab}Folder: {i}')
+                self.logger.info(f'{tab}Folder: {i}')
                 self.log_full_folder_structure(i_path, numb_of_tabs + 1)
             else:
-                logging.info(f'{tab}File: {i}')
+                self.logger.info(f'{tab}File: {i}')
 
     def save_all_data_to_zip(self):
         """ This method saves all data in the 'new_path' directory to a ZIP archive. """
@@ -245,7 +249,7 @@ class UserData:
 if __name__ == '__main__':
     user_data = UserData()
     # (1) Setting up new file logger
-    user_data.configure_logger()
+    user_data.get_logger()
     # (2) Downloading some data by URL
     user_data.download_user_data()
     user_data.get_user_data_from_csv()
