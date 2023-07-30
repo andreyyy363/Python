@@ -121,19 +121,9 @@ class UserData:
                 i['name.title'] = 'Mademoiselle'
         self.logger.debug(f'Name title for user {i["login.username"]} has been changed to {i["name.title"]}.')
 
-    def convert_date_in_sorted_data(self, i):
-        # Convert dob.date
-        dob_date = datetime.fromisoformat(i['dob.date'].replace('Z', '+00:00'))
-        i['dob.date'] = dob_date.strftime('%m/%d/%Y')
-
-        self.logger.debug(f'Dob date for user {i["login.username"]} has been converted to {i["dob.date"]}.')
-
-        # Convert registered.date
-        register_datetime = datetime.fromisoformat(i['registered.date'].replace('Z', '+00:00'))
-        i['registered.date'] = register_datetime.strftime('%m-%d-%Y, %H:%M:%S')
-
-        self.logger.debug(f'Register date for user {i["login.username"]} '
-                          f'has been converted to {i["registered.date"]}.')
+    def convert_date_in_sorted_data(self, i, date_type):
+        date = datetime.fromisoformat(i[date_type].replace('Z', '+00:00'))
+        i[date_type] = date.strftime(f'%m/%d/%Y{", %H:%M:%S" if date_type == "registered.date" else ""}')
 
     def update_some_data(self):
         """
@@ -149,7 +139,15 @@ class UserData:
         for i in self.sorted_data:
             self.add_current_time_to_sorted_data(i)
             self.change_title_name_in_sorted_data(i)
-            self.convert_date_in_sorted_data(i)
+
+            # Convert dob.date
+            self.convert_date_in_sorted_data(i, 'dob.date')
+            self.logger.debug(f'Dob date for user {i["login.username"]} has been converted to {i["dob.date"]}.')
+
+            # Convert registered.date
+            self.convert_date_in_sorted_data(i, 'registered.date')
+            self.logger.debug(f'Register date for user {i["login.username"]} '
+                              f'has been converted to {i["registered.date"]}.')
 
         self.logger.info('The sorted data was successfully modified.')
         self.logger.debug(f'Fieldnames with new columns in data: {self.fieldnames}')
@@ -160,8 +158,7 @@ class UserData:
         with open(self.destination, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
             writer.writeheader()
-            for row in self.sorted_data:
-                writer.writerow(row)
+            writer.writerows(self.sorted_data)
 
         self.logger.info(f'The sorted data was successfully saved to {self.destination}.')
 
