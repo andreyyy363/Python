@@ -10,6 +10,8 @@ import pytz
 
 class UserData:
     """ Class to work with user database """
+    URL = 'https://randomuser.me/api/?format=csv&results=100'
+    
     def __init__(self):
         self.args = self.setting_argparse()
         self.logger = self.get_logger()
@@ -54,9 +56,8 @@ class UserData:
         This function downloads user data from the specified API endpoint in CSV format
         and saves it to the destination path provided in the command line arguments.
         """
-        url = 'https://randomuser.me/api/?format=csv&results=100'
-        urllib.request.urlretrieve(url, self.destination)
-        self.logger.info(f'File successfully downloaded from {url} and saved to {self.destination}')
+        urllib.request.urlretrieve(self.URL, self.destination)
+        self.logger.info(f'File successfully downloaded from {self.URL} and saved to {self.destination}')
 
     def get_user_data_from_csv(self):
         """
@@ -68,8 +69,8 @@ class UserData:
         with open(self.destination, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             self.fieldnames = reader.fieldnames
-            for row in reader:
-                self.data.append(row)
+            self.data = list(reader)
+
         self.logger.info('Data successfully read from the file.')
         self.logger.debug(f'Fieldnames in data: {self.fieldnames}')
         self.logger.debug(f'Received data from the file: {self.data}')
