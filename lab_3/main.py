@@ -156,7 +156,11 @@ class UserData:
         self.save_data_to_csv(self.sorted_data, self.destination)
 
     def save_data_to_csv(self, data, destination):
-        """ This method saves the sorted data to a CSV file at the destination. """
+        """
+         This method saves the sorted data to a CSV file at the destination.
+        :param data: a list of dictionaries containing data to be saved.
+        :param destination: the file path where the CSV file will be created.
+        """
         with open(destination, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
             writer.writeheader()
@@ -193,6 +197,12 @@ class UserData:
         self.logger.debug(f'Rearranged data: {self.rearranged_data}')
 
     def count_age(self, users_data):
+        """
+        Calculate the maximum and average age from a list of user data.
+        :param users_data: a list of dictionaries containing user data,
+                            with each dictionary having 'dob.age' as the key for age.
+        :return max_age, avg_registered: returns the calculated maximum age and average age as integers.
+        """
         # Count max age and average age
         ages = [int(i['dob.age']) for i in users_data]
         max_age = max(ages)
@@ -201,6 +211,13 @@ class UserData:
         return max_age, avg_registered
 
     def find_most_popular_id(self, users_data):
+        """
+        Find the most popular 'id.name' from a list of user data.
+        :param users_data: a list of dictionaries containing user data,
+                                       with each dictionary having 'id.name' as the key for name.
+        :return popular_id: the most popular 'id.name' found in the data.
+
+        """
         # Find most popular id
         id_names = [i['id.name'] for i in users_data]
         name_counter = Counter(id_names)
@@ -208,6 +225,13 @@ class UserData:
         return popular_id
 
     def create_file_path(self, users_data, decade, country):
+        """
+        Create a file name and path based on data attributes.
+        :param users_data: a list of dictionaries containing user data.
+        :param decade: the decade information to be included in the file path.
+        :param country: the country information to be included in the file path.
+        :return file_name, file_path: returns the generated file name and the full file path as strings.
+        """
         max_age, avg_registered = self.count_age(users_data)
         popular_id = self.find_most_popular_id(users_data)
 
