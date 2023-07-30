@@ -6,6 +6,7 @@ import shutil
 from datetime import datetime, timedelta
 import urllib.request
 import pytz
+from collections import Counter
 
 
 class UserData:
@@ -16,7 +17,7 @@ class UserData:
         self.args = self.setting_argparse()
         self.logger = self.get_logger()
         self.destination = f'{self.args.destination}{self.args.filename}.csv'
-        self.new_path = fr'{self.args.destination}\Data'
+        self.new_path = os.path.join(self.args.destination, 'Data')
         self.data = []
         self.fieldnames = None
         self.sorted_data = []
@@ -152,23 +153,25 @@ class UserData:
         self.logger.info('The sorted data was successfully modified.')
         self.logger.debug(f'Fieldnames with new columns in data: {self.fieldnames}')
         self.logger.debug(f'Changed sorted data: {self.sorted_data}')
+        self.save_data_to_csv(self.sorted_data, self.destination)
 
-    def save_data_to_csv(self):
+    def save_data_to_csv(self, data, destination):
         """ This method saves the sorted data to a CSV file at the destination. """
-        with open(self.destination, 'w', newline='', encoding='utf-8') as csvfile:
+        with open(destination, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
             writer.writeheader()
-            writer.writerows(self.sorted_data)
+            writer.writerows(data)
 
-        self.logger.info(f'The sorted data was successfully saved to {self.destination}.')
+        self.logger.info(f'The data was successfully saved to {destination}.')
 
     def create_new_working_dir(self):
         """ This method creates a new working directory and moves the sorted data file to that directory. """
-
-        os.mkdir(fr'{self.args.destination}\Data')
+        os.mkdir(os.path.join(self.args.destination, 'Data'))
         self.logger.info(f'The new folder was successfully created. His full path {self.new_path}')
+
         shutil.move(self.destination, self.new_path)
         self.logger.info(f'File with sorted data moved to {self.new_path}')
+
         os.chdir(self.new_path)
         self.logger.info(f'New working directory: {self.new_path}')
 
@@ -178,10 +181,7 @@ class UserData:
             dob_date = datetime.strptime(i['dob.date'], '%m/%d/%Y')
             decade = f'{dob_date.year // 10 * 10}-th'
             country = i['location.country']
-            if decade not in self.rearranged_data:
-                self.rearranged_data[decade] = {}
-            if country not in self.rearranged_data[decade]:
-                self.rearranged_data[decade][country] = []
+            self.rearranged_data.setdefault(decade, {}).setdefault(country, [])
             self.rearranged_data[decade][country].append(i)
 
         for decade, decade_data in self.rearranged_data.items():
@@ -192,63 +192,66 @@ class UserData:
         self.logger.info('The sorted date was successfully rebuilt to the new format.')
         self.logger.debug(f'Rearranged data: {self.rearranged_data}')
 
-    def create_sub_folders_and_save_some_data(self):
+    def count_age(self, users_data):
+        # Count max age and average age
+        ages = [int(i['dob.age']) for i in users_data]
+        max_age = max(ages)
+        total_ages = sum(ages)
+        avg_registered = int(total_ages / len(users_data))
+        return max_age, avg_registered
+
+    def find_most_popular_id(self, users_data):
+        # Find most popular id
+        id_names = [i['id.name'] for i in users_data]
+        name_counter = Counter(id_names)
+        popular_id = name_counter.most_common(1)[0][0]
+        return popular_id
+
+    def create_file_path(self, users_data, decade, country):
+        max_age, avg_registered = self.count_age(users_data)
+        popular_id = self.find_most_popular_id(users_data)
+
+        file_name = f'max_age_{max_age}_avg_registered_{avg_registered}_popular_id_{popular_id}.csv'
+        country_path = os.path.join(decade, country)
+        file_path = os.path.join(country_path, file_name)
+        return file_name, file_path
+
+    def create_sub_folders_with_data(self):
         """
         This method creates sub folders for each decade and country and saves specific data
         for each group in CSV files.
         """
-        id_names = []
         for decade, decade_data in self.rearranged_data.items():
             os.makedirs(decade)
             for country, users_data in decade_data.items():
                 os.makedirs(os.path.join(decade, country))
-                total_ages = 0
-                max_age = 0
-                for i in users_data:
-                    if int(i['dob.age']) > max_age:
-                        max_age = int(i['dob.age'])
-                    total_ages += int(i['dob.age'])
-                    id_names = [i['id.name']]
-
-                avg_registered = int(total_ages / len(users_data))
-                popular_id = max(set(id_names), key=id_names.count)
-
-                file_name = f'max_age_{max_age}_avg_registered_{avg_registered}_popular_id_{popular_id}.csv'
-                country_path = os.path.join(decade, country)
-                file_path = os.path.join(country_path, file_name)
-
-                with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-                    writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
-                    writer.writeheader()
-                    writer.writerows(users_data)
-
+                file_name, file_path = self.create_file_path(users_data, decade, country)
+                self.save_data_to_csv(users_data, file_path)
                 self.logger.info(f'File {file_name} created in {file_path}')
 
     def delete_decades_before_1960th(self):
         """ This method deletes all folders with a decade before the 1960s in the Data folder. """
-        for i in os.listdir(fr'{self.new_path}'):
-            if os.path.isdir(fr'{self.new_path}\{i}'):
-                decade = int(i.split('-')[0])
-                if decade < 1960:
-                    shutil.rmtree(fr'{self.new_path}\{i}')
-                    self.logger.debug(fr'The folder has been deleted in the path: {self.new_path}\{i}')
+        for i in os.listdir(self.new_path):
+            if os.path.isdir(os.path.join(self.new_path, i)) and int(i.split('-')[0]) < 1960:
+                shutil.rmtree(os.path.join(self.new_path, i))
+                self.logger.debug(fr'The folder has been deleted in the path: {os.path.join(self.new_path, i)}')
         self.logger.info('All folders with a decade before the 1960s have been deleted.')
 
-    def log_full_folder_structure(self, path, numb_of_tabs=0):
+    def log_full_folder_structure(self, path, numb_of_indents=0):
         """
         This method logs the full folder structure with indentation.
 
         :param path: the path to the root folder from which the traversal begins
-        :param numb_of_tabs: the number of tabs used for formatting the output
+        :param numb_of_indents: the number of tabs used for formatting the output
         """
-        tab = '\t' * numb_of_tabs
+        indent = '\t' * numb_of_indents
         for i in os.listdir(path):
             i_path = os.path.join(path, i)
             if os.path.isdir(i_path):
-                self.logger.info(f'{tab}Folder: {i}')
-                self.log_full_folder_structure(i_path, numb_of_tabs + 1)
+                self.logger.info(f'{indent}Folder: {i}')
+                self.log_full_folder_structure(i_path, numb_of_indents + 1)
             else:
-                self.logger.info(f'{tab}File: {i}')
+                self.logger.info(f'{indent}File: {i}')
 
     def save_all_data_to_zip(self):
         """ This method saves all data in the 'new_path' directory to a ZIP archive. """
@@ -267,13 +270,12 @@ if __name__ == '__main__':
     user_data.sort_data()
     # (5) Adding some fields to the file and saving data to csv
     user_data.update_some_data()
-    user_data.save_data_to_csv()
     # (6-7) Creating a new directory and assigning it to a working directory
     user_data.create_new_working_dir()
     # (8) Rearranging the data
     user_data.rearrange_the_data()
     # (9-11) Creating sub folders with special data
-    user_data.create_sub_folders_and_save_some_data()
+    user_data.create_sub_folders_with_data()
     # (12) Removing the data before 1960-th
     user_data.delete_decades_before_1960th()
     # (13) Logging full folder structure
