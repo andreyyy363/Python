@@ -1,9 +1,7 @@
 import requests
-import textwrap
 import csv
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from pprint import pprint
 from collections import Counter
 
 
@@ -17,269 +15,119 @@ class MovieData:
     }
 
     def __init__(self, numb_of_pages):
+        self.genres = None
         self.pages = numb_of_pages
+        self.data = []
 
-    def fetch_some_data(self, print_with_indexes):
-        params = {'page': 1}
-        data = {}
-        if print_with_indexes:
-            start_index = 3
-            ebd_index = 19
-            step = 4
-        else:
-            start_index = None
-            ebd_index = None
-            step = None
-
+    def fetch_all_data_in_pages(self):
         for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            print(f"\nPage {data['page']}")
-            count = 1
-            for j in data['results'][start_index:ebd_index:step]:
-                print(f"Film #{count}")
-                print('*' * 95)
-                print('The title of the movie:')
-                print(j['original_title'])
-                print('-' * 95)
-                print('Brief description:')
-                for overview in textwrap.wrap(j['overview'], width=95):
-                    print(overview)
-                print('*' * 95)
-                count += 1
-            params['page'] += 1
-        return data
+            response = requests.get(self.data_url, params={'page': i + 1}, headers=self.headers)
+            self.data.extend(response.json()['results'])
 
-    def fetch_all_data(self):
-        params = {'page': 1}
-        data = {}
-        for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            data.update(response.headers)
-            pprint(data)
-        return data
+    def give_data(self):
+        return self.data
+
+    def give_data_with_indexes(self):
+        return self.data[3:19:4]
 
     def find_popular_title(self):
-        params = {'page': 1}
-        popular_title = None
-        max_popularity = float('-inf')
-        while True:
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            for j in data['results']:
-                current_popularity = j['popularity']
-                if current_popularity > max_popularity:
-                    max_popularity = current_popularity
-                    popular_title = j['original_title']
-            if params['page'] < self.pages:
-                params['page'] += 1
-            else:
-                break
-        print(f"Name of the most popular title: {popular_title} ({max_popularity})")
+        max_popularity = max(self.data, key=lambda x: x['popularity'])
+        popular_title = max_popularity['original_title']
         return popular_title
 
-    def find_film_with_keyword(self):
-        keyword = input('Please, enter the keyword for which you want to search for a movie: ')
-        print('Movies in which the keyword is found:')
-        params = {'page': 1}
-        title_list = []
-        for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            for j in data['results']:
-                if keyword in j['overview']:
-                    title_list = j['original_title']
-                    print(j['original_title'])
+    def find_film_with_keyword(self, keyword):
+        title_list = [j['original_title'] for j in self.data if keyword in j['overview']]
         return title_list
 
     def get_unique_collections(self):
         response = requests.get(self.genre_url, headers=self.headers)
-        genres = response.json()
-        print('Unique film genres:')
-        for i in genres['genres']:
-            print(f"{i['name']} (id:{i['id']})")
-        return genres
+        self.genres = response.json()['genres']
+        genre_dict = {i['id']: i['name'] for i in self.genres}
 
-    def delete_films_with_genre(self):
-        data = {}
-        genre_name_for_delete = input('Please, enter the name of the genre you want to delete: ')
-        genre_id_for_delete = None
-        params = {'page': 1}
-        response = requests.get(self.genre_url, headers=self.headers)
-        genres = response.json()
-        for i in genres['genres']:
-            if i['name'].lower() == genre_name_for_delete.lower():
-                genre_id_for_delete = i['id']
+        all_genres = set()
+        for i in self.data:
+            genre_names = [genre_dict[j] for j in i['genre_ids'] if j in genre_dict]
+            all_genres.update(genre_names)
+        return all_genres
 
-        print('Films without deleted genre: ')
-        for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            print(f"\nPage {data['page']}")
-            count = 0
-            for j in data['results']:
-                if genre_id_for_delete in j['genre_ids']:
-                    data['results'].pop(count)
-                    count += 1
-            pprint(data)
-        return data
+    def delete_films_with_genre(self, genre_name_for_delete):
+        genre_id_for_delete = next(i['id'] for i in self.genres if i['name'].lower() == genre_name_for_delete.lower())
+        self.data = [i for i in self.data if genre_id_for_delete not in i['genre_ids']]
+        return self.data
 
     def find_most_popular_genre(self):
-        params = {'page': 1}
-        response = requests.get(self.genre_url, headers=self.headers)
-        genres = response.json()
-        genre_names = {}
-        all_genres = []
-
-        for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            for j in data['results']:
-                all_genres += j['genre_ids']
-
-        for j in genres['genres']:
-            genre_names[j['id']] = j['name']
-
+        all_genres = [genre_id for i in self.data for genre_id in i['genre_ids']]
+        genre_names = {genre['id']: genre['name'] for genre in self.genres}
         most_common_genres = Counter(all_genres).most_common()
-
-        for i, count in most_common_genres:
-            popular_genre_names = genre_names.get(i)
-            print(f"Genre {popular_genre_names} found {count} times.")
+        popular_genres = [{'genre_name': genre_names[i], 'count': count} for i, count in most_common_genres]
+        return popular_genres
 
     def get_grouped_film_collection(self):
-        params = {'page': 1}
-        data = {}
-        for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-        response = requests.get(self.genre_url, headers=self.headers)
-        genres = response.json()
-        genre_names = {}
+        film_collections = [[film_1, film_2] for i, film_1 in enumerate(self.data) for j, film_2 in enumerate(self.data)
+                            if i != j and set(film_1['genre_ids']) & set(film_2['genre_ids'])]
+        return film_collections
 
-        for j in genres['genres']:
-            genre_names[j['id']] = j['name']
-
-        sorted_film = {}
-        for i in data['results']:
-            for j in i['genre_ids']:
-                if j not in sorted_film:
-                    sorted_film[j] = []
-                sorted_film[j].append(i['title'])
-
-        for genre_id, titles in sorted_film.items():
-            print(f"{genre_names[genre_id]}:")
-            for i in titles:
-                print(f" - {i}")
-        return sorted_film
+    def get_copy_and_modified_copy(self):
+        broken_data = self.data.copy()
+        for j in broken_data:
+            j['genre_ids'][0] = 22
+        return self.data, broken_data
 
     def get_some_data_to_file(self):
-        params = {'page': 1}
         film_collection = []
-        for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            for j in data['results']:
-                title = j['original_title']
-                popularity = format(j['popularity'], '.1f')
-                score = format(j['vote_average'], '.0f')
-                release_date = datetime.strptime(j['release_date'], '%Y-%m-%d')
-                day_in_cinema = release_date
-                day_in_cinema += relativedelta(months=2) + timedelta(days=14)
-                film_data = {
-                    'title': title,
-                    'popularity': popularity,
-                    'score': score,
-                    'release_date': release_date.date(),
-                    'last day in cinema': day_in_cinema.date()
-                }
-                film_collection.append(film_data)
-                print('')
-                print('*' * 95)
-                print(f"The title of the movie: {title}")
-                print(f"Popularity: {popularity}")
-                print(f"Score: {score}")
-                print(f"Release date: {release_date.date()}")
-                print(f"Last day in cinema: {day_in_cinema.date()}")
-                print('*' * 95)
-            params['page'] += 1
+        for i in self.data:
+            title = i['original_title']
+            popularity = format(i['popularity'], '.1f')
+            score = format(i['vote_average'], '.0f')
+            release_date = datetime.strptime(i['release_date'], '%Y-%m-%d')
+            day_in_cinema = release_date
+            day_in_cinema += relativedelta(months=2) + timedelta(days=14)
+            film_data = {
+                'title': title,
+                'popularity': popularity,
+                'score': score,
+                'release_date': release_date.date(),
+                'last day in cinema': day_in_cinema.date()
+            }
+            film_collection.append(film_data)
+
         film_collection.sort(key=lambda x: (x['score'], x['popularity']))
         return film_collection
 
-    def get_copy_and_modified_copy(self):
-        params = {'page': 1}
-        data = {}
-        broken_data = {}
-        for i in range(self.pages):
-            response = requests.get(self.data_url, params=params, headers=self.headers)
-            data = response.json()
-            broken_data = data
-            for j in broken_data['results']:
-                j['genre_ids'][0] = 22
-        pprint(broken_data)
-        return data, broken_data
-
-    def save_some_data_to_file(self, film_collection):
-        path_to_file = input('Please, enter the path to the file you want to save this (Example: C: Path to file): ')
+    def save_some_data_to_file(self, film_collection, path_to_file):
         with open(path_to_file, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = ['title', 'popularity', 'score', 'release_date', 'last day in cinema']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(film_collection)
-        print('Successful!')
-
-    def print_menu(self):
-        stripes = '-' * 95
-        print(stripes)
-        print('Actions with the movie database:')
-        print(stripes)
-        print('[1]  - Fetch the data from desired amount of pages.')
-        print('[2]  - Fetch all data.')
-        print('[3]  - Fetch all data about movies with indexes from 3 till 19 with step 4.')
-        print('[4]  - Get a name of the most popular title.')
-        print('[5]  - Get a names of titles which has in description key words.')
-        print('[6]  - Get a unique collection.')
-        print('[7]  - Delete all movies with a specified genre.')
-        print('[8]  - Get names of most popular genres with numbers of time the appear in the data.')
-        print('[9]  - Get collection of film titles  grouped in pairs by common genres.')
-        print('[10] - Return and copy initial data where first id in list of film genres was replaced with 22.')
-        print('[11] - Get collection of structures with part of initial data and write it to a csv file.')
-        print('[12] - Stop program.')
-        print(stripes)
-
-    def choose_action(self):
-        while True:
-            self.print_menu()
-            choice = input('Please, enter your choice: ')
-            match int(choice):
-                case 1:
-                    self.fetch_some_data(False)
-                case 2:
-                    self.fetch_all_data()
-                case 3:
-                    self.fetch_some_data(True)
-                case 4:
-                    self.find_popular_title()
-                case 5:
-                    self.find_film_with_keyword()
-                case 6:
-                    self.get_unique_collections()
-                case 7:
-                    self.delete_films_with_genre()
-                case 8:
-                    self.find_most_popular_genre()
-                case 9:
-                    self.get_grouped_film_collection()
-                case 10:
-                    self.get_copy_and_modified_copy()
-                case 11:
-                    self.save_some_data_to_file(self.get_some_data_to_file())
-                case 12:
-                    break
 
 
 print('Lab_2')
 print('-----------------------------------------------------------------------------------------------')
 pages = input("Please, enter the number of pages you want to work with: ")
 movies = MovieData(int(pages))
-movies.choose_action()
+# (1) Fetch the data from desired amount of pages.
+movies.fetch_all_data_in_pages()
+# (2) Give all data
+movies.give_data()
+# (3) Give all data about movies with indexes from 3 till 19 with step 4
+movies.give_data_with_indexes()
+# (4) Get name of the most popular title
+movies.find_popular_title()
+# (5) Get names of titles which has in description keywords which a user put as parameters
+word = input('Please, enter the keyword for which you want to search for a movie: ')
+movies.find_film_with_keyword(word)
+# (6) Get unique collection of present genres
+movies.get_unique_collections()
+# (7) Delete all movies with user provided genre
+genre_name = input('Please, enter the name of the genre you want to delete: ')
+movies.delete_films_with_genre(genre_name)
+# (8) Get names of most popular genres with numbers of time they appear in the data
+movies.find_most_popular_genre()
+# (9) Get collection of film titles  grouped in pairs by common genres
+movies.get_grouped_film_collection()
+# (10) Return initial data and copy of initial data where first id in list of film genres was replaced with 22
+movies.get_copy_and_modified_copy()
+# (11 - 12) Get collection of structures with part of initial data and write information to a csv file using path
+path = input('Please, enter the path to the file you want to save this (Example: C: Path to file): ')
+movies.save_some_data_to_file(movies.get_some_data_to_file(), path)
