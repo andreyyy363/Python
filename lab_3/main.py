@@ -229,10 +229,7 @@ class UserData:
                            with each dictionary having 'id.name' as the key for name.
         :return popular_id: the most popular 'id.name' found in the data.
         """
-        id_names = [i['id.name'] for i in users_data]
-        name_counter = Counter(id_names)
-        popular_id = name_counter.most_common(1)[0][0]
-        return popular_id
+        return Counter(i['id.name'] for i in users_data).most_common(1)[0][0]
 
     def create_file_path(self, users_data, decade, country):
         """
