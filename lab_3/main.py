@@ -100,12 +100,6 @@ class UserData:
             if isinstance(self.args.gender, str) or isinstance(self.args.numb_of_rows, int) else None
         self.logger.debug(f'Sorted data: {self.sorted_data}')
 
-    def add_index_to_sorted_data(self):
-        """ Add a global index to each row in the sorted data. """
-        for i, row in enumerate(self.sorted_data, start=1):
-            row['global.index'] = i
-        self.logger.info('Column "global.index" filled successfully.')
-
     def add_current_time_to_sorted_data(self, i):
         """
         Add the current time of the user to the given row in the sorted data.
@@ -148,8 +142,8 @@ class UserData:
         self.fieldnames.append('current.time')
         self.logger.info('New columns added to fieldnames.')
 
-        self.add_index_to_sorted_data()
-        for i in self.sorted_data:
+        for row_numb, i in enumerate(self.sorted_data, start=1):
+            i['global.index'] = row_numb
             self.add_current_time_to_sorted_data(i)
             self.change_title_name_in_sorted_data(i)
 
@@ -162,6 +156,7 @@ class UserData:
             self.logger.debug(f'Register date for user {i["login.username"]} '
                               f'has been converted to {i["registered.date"]}.')
 
+        self.logger.info('Column "global.index" filled successfully.')
         self.logger.info('The sorted data was successfully modified.')
         self.logger.debug(f'Fieldnames with new columns in data: {self.fieldnames}')
         self.logger.debug(f'Changed sorted data: {self.sorted_data}')
@@ -169,7 +164,7 @@ class UserData:
 
     def save_data_to_csv(self, data, destination):
         """
-         This method saves the sorted data to a CSV file at the destination.
+        This method saves the sorted data to a CSV file at the destination.
         :param data: a list of dictionaries containing data to be saved.
         :param destination: the file path where the CSV file will be created.
         """
@@ -195,10 +190,8 @@ class UserData:
         """ This method rearranges the sorted data into a new format, grouped by decade and country. """
         for i in self.sorted_data:
             dob_date = datetime.strptime(i['dob.date'], '%m/%d/%Y')
-            decade = f'{dob_date.year // 10 * 10}-th'
-            country = i['location.country']
-            self.rearranged_data.setdefault(decade, {}).setdefault(country, [])
-            self.rearranged_data[decade][country].append(i)
+            self.rearranged_data.setdefault(f'{dob_date.year // 10 * 10}-th', {}).setdefault(i['location.country'], [])
+            self.rearranged_data[f'{dob_date.year // 10 * 10}-th'][i['location.country']].append(i)
 
         for decade, decade_data in self.rearranged_data.items():
             for country, data in decade_data.items():
@@ -217,10 +210,7 @@ class UserData:
         """
         # Count max age and average age
         ages = [int(i['dob.age']) for i in users_data]
-        max_age = max(ages)
-        total_ages = sum(ages)
-        avg_registered = int(total_ages / len(users_data))
-        return max_age, avg_registered
+        return max(ages), int(sum(ages) / len(users_data))
 
     def find_most_popular_id(self, users_data):
         """
@@ -252,7 +242,6 @@ class UserData:
         for each group in CSV files.
         """
         for decade, decade_data in self.rearranged_data.items():
-            os.makedirs(decade)
             for country, users_data in decade_data.items():
                 os.makedirs(os.path.join(decade, country))
                 file_name, file_path = self.create_file_path(users_data, decade, country)
