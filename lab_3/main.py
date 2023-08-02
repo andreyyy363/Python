@@ -97,13 +97,16 @@ class UserData:
         self.logger.debug(f'Sorted data: {self.sorted_data}')
 
     def add_index_to_sorted_data(self):
-        # Add global index
+        """ Add a global index to each row in the sorted data. """
         for i, row in enumerate(self.sorted_data, start=1):
             row['global.index'] = i
         self.logger.info('Column "global.index" filled successfully.')
 
     def add_current_time_to_sorted_data(self, i):
-        # Add current time
+        """
+        Add the current time of the user to the given row in the sorted data.
+        :param i: the dictionary representing the row in the sorted data to which the current time will be added
+        """
         timezone_str = i['location.timezone.offset']
         hours, minutes = map(int, timezone_str.split(':'))
         i['current.time'] = timedelta(hours=hours, minutes=minutes) + datetime.now(pytz.utc)
@@ -214,11 +217,9 @@ class UserData:
         """
         Find the most popular 'id.name' from a list of user data.
         :param users_data: a list of dictionaries containing user data,
-                                       with each dictionary having 'id.name' as the key for name.
+                           with each dictionary having 'id.name' as the key for name.
         :return popular_id: the most popular 'id.name' found in the data.
-
         """
-        # Find most popular id
         id_names = [i['id.name'] for i in users_data]
         name_counter = Counter(id_names)
         popular_id = name_counter.most_common(1)[0][0]
