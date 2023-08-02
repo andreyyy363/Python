@@ -7,11 +7,12 @@ from datetime import datetime, timedelta
 import urllib.request
 import pytz
 from collections import Counter
+import copy
 
 
 class UserData:
     """ Class to work with user database """
-    URL = 'https://randomuser.me/api/?format=csv&results=5000'
+    URL = 'https://randomuser.me/api/?format=csv&results=100'
     
     def __init__(self):
         self.args = self.setting_argparse()
@@ -84,16 +85,19 @@ class UserData:
         to filter data by gender, or an integer value to filter data by the number of rows.
         """
         # Filter by gender
-        if self.args.numb_of_rows is None:
-            reverse = True if self.args.gender.lower() == 'male' else \
-                False if self.args.gender.lower() == 'female' else None
-            self.sorted_data = sorted(self.data, key=lambda x: x['gender'], reverse=reverse)
+        if (self.args.numb_of_rows is None and isinstance(self.args.gender, str) and
+                self.args.gender.lower() in ['male', 'female']):
+            self.sorted_data = [i for i in self.data if i['gender'] == self.args.gender.lower()]
 
         # Filter by number of rows
-        elif self.args.gender is None:
+        elif self.args.gender is None and isinstance(self.args.numb_of_rows, int):
             self.sorted_data = self.data[:self.args.numb_of_rows]
 
-        self.logger.info(f'Data successfully sorted by {"rows" if self.args.gender is None else "gender"}.')
+        else:
+            self.sorted_data = copy.deepcopy(self.data)
+
+        self.logger.info(f'Data successfully sorted by {"rows" if self.args.gender is None else "gender"}.') \
+            if isinstance(self.args.gender, str) or isinstance(self.args.numb_of_rows, int) else None
         self.logger.debug(f'Sorted data: {self.sorted_data}')
 
     def add_index_to_sorted_data(self):
@@ -126,6 +130,11 @@ class UserData:
         self.logger.debug(f'Name title for user {i["login.username"]} has been changed to {i["name.title"]}.')
 
     def convert_date_in_sorted_data(self, i, date_type):
+        """
+        Convert a date in the given row of sorted data to a specified date format.
+        :param i: the dictionary representing the row in the sorted data to which the date will be converted
+        :param date_type: the type of date to convert
+        """
         date = datetime.fromisoformat(i[date_type].replace('Z', '+00:00'))
         i[date_type] = date.strftime(f'%m/%d/%Y{", %H:%M:%S" if date_type == "registered.date" else ""}')
 
@@ -264,7 +273,6 @@ class UserData:
     def log_full_folder_structure(self, path, numb_of_indents=0):
         """
         This method logs the full folder structure with indentation.
-
         :param path: the path to the root folder from which the traversal begins
         :param numb_of_indents: the number of tabs used for formatting the output
         """
