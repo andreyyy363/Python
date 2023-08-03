@@ -32,13 +32,10 @@ class MovieData:
         return self.data[3:19:4]
 
     def find_popular_title(self):
-        max_popularity = max(self.data, key=lambda x: x['popularity'])
-        popular_title = max_popularity['original_title']
-        return popular_title
+        return max(self.data, key=lambda x: x['popularity'])['original_title']
 
     def find_film_with_keyword(self, keyword):
-        title_list = [j['original_title'] for j in self.data if keyword in j['overview']]
-        return title_list
+        return [j['original_title'] for j in self.data if keyword in j['overview']]
 
     def get_unique_collections(self):
         response = requests.get(self.GENRE_URL, headers=self.HEADERS)
