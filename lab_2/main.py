@@ -6,13 +6,14 @@ from collections import Counter
 
 
 class MovieData:
-    api_path = 'https://api.themoviedb.org/3'
-    genre_url = f'{api_path}/genre/movie/list?language=en'
-    data_url = api_path + '/discover/movie?include_adult=false&include_video=false&sort_by=popularity.desc&page={!!!!}'
-    headers = {
+    API_PATH = 'https://api.themoviedb.org/3'
+    GENRE_URL = f'{API_PATH}/genre/movie/list?language=en'
+    DATA_URL = API_PATH + '/discover/movie?include_adult=false&include_video=false&sort_by=popularity.desc&page={!!!!}'
+    HEADERS = {
         'accept': 'application/json',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMTI3NGFmYTRlNTUyMjRjYzRlN2Q0NmNlMTNkOTZjOSIsInN1YiI6IjVkNmZhMWZmNzdjMDFmMDAxMDU5NzQ4OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.lbpgyXlOXwrbY0mUmP-zQpNAMCw_h-oaudAJB6Cn5c8'
     }
+    FIELDNAMES = ['title', 'popularity', 'score', 'release_date', 'last day in cinema']
 
     def __init__(self, numb_of_pages):
         self.genres = None
@@ -21,7 +22,7 @@ class MovieData:
 
     def fetch_all_data_in_pages(self):
         for i in range(self.pages):
-            response = requests.get(self.data_url, params={'page': i + 1}, headers=self.headers)
+            response = requests.get(self.DATA_URL, params={'page': i + 1}, headers=self.HEADERS)
             self.data.extend(response.json()['results'])
 
     def give_data(self):
@@ -40,7 +41,7 @@ class MovieData:
         return title_list
 
     def get_unique_collections(self):
-        response = requests.get(self.genre_url, headers=self.headers)
+        response = requests.get(self.GENRE_URL, headers=self.HEADERS)
         self.genres = response.json()['genres']
         genre_dict = {i['id']: i['name'] for i in self.genres}
 
@@ -96,8 +97,7 @@ class MovieData:
 
     def save_some_data_to_file(self, film_collection, path_to_file):
         with open(path_to_file, 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = ['title', 'popularity', 'score', 'release_date', 'last day in cinema']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer = csv.DictWriter(csvfile, fieldnames=self.FIELDNAMES)
             writer.writeheader()
             writer.writerows(film_collection)
 
