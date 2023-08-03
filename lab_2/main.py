@@ -14,11 +14,12 @@ class MovieData:
         'accept': 'application/json',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMTI3NGFmYTRlNTUyMjRjYzRlN2Q0NmNlMTNkOTZjOSIsInN1YiI6IjVkNmZhMWZmNzdjMDFmMDAxMDU5NzQ4OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.lbpgyXlOXwrbY0mUmP-zQpNAMCw_h-oaudAJB6Cn5c8'
     }
-    FIELDNAMES = ['title', 'popularity', 'score', 'release_date', 'last day in cinema']
+    FIELDNAMES = ['title', 'popularity', 'score', 'release_date', 'last_day_in_cinema']
 
     def __init__(self, numb_of_pages):
         self.genres = None
         self.genre_dict = None
+        self.genre_names = None
         self.pages = numb_of_pages
         self.data = []
 
@@ -48,6 +49,7 @@ class MovieData:
         all_genres = set()
         genre_names = [self.genre_dict[j] for i in self.data for j in i['genre_ids'] if j in self.genre_dict]
         all_genres.update(genre_names)
+        self.genre_names = {genre['id']: genre['name'] for genre in self.genres}
         return all_genres
 
     def delete_films_with_genre(self, genre_name_for_delete):
@@ -57,42 +59,39 @@ class MovieData:
 
     def find_most_popular_genre(self):
         all_genres = [genre_id for i in self.data for genre_id in i['genre_ids']]
-        genre_names = {genre['id']: genre['name'] for genre in self.genres}
-        most_common_genres = Counter(all_genres).most_common()
-        popular_genres = [{'genre_name': genre_names[i], 'count': count} for i, count in most_common_genres]
+        popular_genres = [{'genre_name': self.genre_names[i], 'count': count}
+                          for i, count in Counter(all_genres).most_common()]
         return popular_genres
 
     def get_grouped_film_collection(self):
-        film_collections = [[film_1, film_2] for i, film_1 in enumerate(self.data) for j, film_2 in enumerate(self.data)
-                            if i != j and set(film_1['genre_ids']) & set(film_2['genre_ids'])]
+        film_collections = [[film_1, film_2] for i, film_1 in enumerate(self.data) for film_2 in self.data[i + 1:]
+                            if set(film_1['genre_ids']) & set(film_2['genre_ids'])]
         return film_collections
 
     def get_copy_and_modified_copy(self):
         broken_data = copy.deepcopy(self.data)
         for j in broken_data:
-            j['genre_ids'][0] = 22
+            j['genre_ids'][0] = 22 if j['genre_ids'] else j['genre_ids'].append(22)
         return self.data, broken_data
 
-    def get_some_data_to_file(self):
-        film_collection = []
-        for i in self.data:
-            title = i['original_title']
-            popularity = format(i['popularity'], '.1f')
-            score = format(i['vote_average'], '.0f')
-            release_date = datetime.strptime(i['release_date'], '%Y-%m-%d')
-            day_in_cinema = release_date
-            day_in_cinema += relativedelta(months=2) + timedelta(days=14)
-            film_data = {
-                'title': title,
-                'popularity': popularity,
-                'score': score,
-                'release_date': release_date.date(),
-                'last day in cinema': day_in_cinema.date()
-            }
-            film_collection.append(film_data)
+    def format_film_data(self, i):
+        title = i['original_title']
+        popularity = format(i['popularity'], '.1f')
+        score = format(i['vote_average'], '.0f')
+        release_date = datetime.strptime(i['release_date'], '%Y-%m-%d')
+        day_in_cinema = release_date + relativedelta(months=2) + timedelta(days=14)
 
-        film_collection.sort(key=lambda x: (x['score'], x['popularity']))
-        return film_collection
+        return {
+            'title': title,
+            'popularity': popularity,
+            'score': score,
+            'release_date': release_date.date(),
+            'last_day_in_cinema': day_in_cinema.date()
+        }
+
+    def get_some_data_to_file(self):
+        film_collection = list(map(self.format_film_data, self.data))
+        return film_collection.sort(key=lambda x: (x['score'], x['popularity']))
 
     def save_some_data_to_file(self, film_collection, path_to_file):
         with open(path_to_file, 'w', newline='', encoding='utf-8') as csvfile:
