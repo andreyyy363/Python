@@ -46,9 +46,8 @@ class MovieData:
 
     def get_unique_collections(self):
         all_genres = set()
-        for i in self.data:
-            genre_names = [self.genre_dict[j] for j in i['genre_ids'] if j in self.genre_dict]
-            all_genres.update(genre_names)
+        genre_names = [self.genre_dict[j] for i in self.data for j in i['genre_ids'] if j in self.genre_dict]
+        all_genres.update(genre_names)
         return all_genres
 
     def delete_films_with_genre(self, genre_name_for_delete):
