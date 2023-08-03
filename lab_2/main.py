@@ -3,6 +3,7 @@ import csv
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from collections import Counter
+import copy
 
 
 class MovieData:
@@ -17,6 +18,7 @@ class MovieData:
 
     def __init__(self, numb_of_pages):
         self.genres = None
+        self.genre_dict = None
         self.pages = numb_of_pages
         self.data = []
 
@@ -37,14 +39,15 @@ class MovieData:
     def find_film_with_keyword(self, keyword):
         return [j['original_title'] for j in self.data if keyword in j['overview']]
 
-    def get_unique_collections(self):
+    def get_genres_data(self):
         response = requests.get(self.GENRE_URL, headers=self.HEADERS)
         self.genres = response.json()['genres']
-        genre_dict = {i['id']: i['name'] for i in self.genres}
+        self.genre_dict = {i['id']: i['name'] for i in self.genres}
 
+    def get_unique_collections(self):
         all_genres = set()
         for i in self.data:
-            genre_names = [genre_dict[j] for j in i['genre_ids'] if j in genre_dict]
+            genre_names = [self.genre_dict[j] for j in i['genre_ids'] if j in self.genre_dict]
             all_genres.update(genre_names)
         return all_genres
 
@@ -66,7 +69,7 @@ class MovieData:
         return film_collections
 
     def get_copy_and_modified_copy(self):
-        broken_data = self.data.copy()
+        broken_data = copy.deepcopy(self.data)
         for j in broken_data:
             j['genre_ids'][0] = 22
         return self.data, broken_data
@@ -115,6 +118,7 @@ movies.find_popular_title()
 word = input('Please, enter the keyword for which you want to search for a movie: ')
 movies.find_film_with_keyword(word)
 # (6) Get unique collection of present genres
+movies.get_genres_data()
 movies.get_unique_collections()
 # (7) Delete all movies with user provided genre
 genre_name = input('Please, enter the name of the genre you want to delete: ')
