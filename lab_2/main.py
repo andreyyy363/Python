@@ -9,7 +9,7 @@ import copy
 class MovieData:
     API_PATH = 'https://api.themoviedb.org/3'
     GENRE_URL = f'{API_PATH}/genre/movie/list?language=en'
-    DATA_URL = API_PATH + '/discover/movie?include_adult=false&include_video=false&sort_by=popularity.desc&page={!!!!}'
+    DATA_URL = API_PATH + '/discover/movie?include_adult=false&include_video=false&sort_by=popularity.desc'
     HEADERS = {
         'accept': 'application/json',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzMTI3NGFmYTRlNTUyMjRjYzRlN2Q0NmNlMTNkOTZjOSIsInN1YiI6IjVkNmZhMWZmNzdjMDFmMDAxMDU5NzQ4OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.lbpgyXlOXwrbY0mUmP-zQpNAMCw_h-oaudAJB6Cn5c8'
@@ -19,7 +19,6 @@ class MovieData:
     def __init__(self, numb_of_pages):
         self.genres = None
         self.genre_dict = None
-        self.genre_names = None
         self.pages = numb_of_pages
         self.data = []
 
@@ -46,10 +45,8 @@ class MovieData:
         self.genre_dict = {i['id']: i['name'] for i in self.genres}
 
     def get_unique_collections(self):
-        all_genres = set()
         genre_names = [self.genre_dict[j] for i in self.data for j in i['genre_ids'] if j in self.genre_dict]
-        all_genres.update(genre_names)
-        self.genre_names = {genre['id']: genre['name'] for genre in self.genres}
+        all_genres = frozenset(genre_names)
         return all_genres
 
     def delete_films_with_genre(self, genre_name_for_delete):
@@ -59,13 +56,13 @@ class MovieData:
 
     def find_most_popular_genre(self):
         all_genres = [genre_id for i in self.data for genre_id in i['genre_ids']]
-        popular_genres = [{'genre_name': self.genre_names[i], 'count': count}
+        popular_genres = [{'genre_name': self.genre_dict[i], 'count': count}
                           for i, count in Counter(all_genres).most_common()]
         return popular_genres
 
     def get_grouped_film_collection(self):
-        film_collections = [[film_1, film_2] for i, film_1 in enumerate(self.data) for film_2 in self.data[i + 1:]
-                            if set(film_1['genre_ids']) & set(film_2['genre_ids'])]
+        film_collections = ([film_1, film_2] for i, film_1 in enumerate(self.data) for film_2 in self.data[i + 1:]
+                            if set(film_1['genre_ids']) & set(film_2['genre_ids']))
         return film_collections
 
     def get_copy_and_modified_copy(self):
