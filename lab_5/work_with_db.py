@@ -1,6 +1,8 @@
-import re
 import csv
+import re
+import random
 from connect_to_db import connect_to_database
+from datetime import datetime, timedelta
 import freecurrencyapi
 
 API_KEY = 'fca_live_T6dRB6eXL7imXrxOpBdiZiUTaXjnzigIAeLL4cDi'
@@ -189,6 +191,91 @@ def perform_transfer(sender_id, receiver_id, amount):
     update_balance(receiver_id, new_receiver_balance)
     insert_transaction((sender_bank_id, sender_id, receiver_bank_id, receiver_id, sender_currency, amount))
 
+
+@connect_to_database
+def get_users_ids(cursor):
+    cursor.execute('SELECT user_id FROM Account')
+    return [i[0] for i in cursor.fetchall()]
+
+
+def get_discount_for_random_users():
+    discounts = (25, 30, 50)
+    user_ids = get_users_ids()
+
+    num_users = random.randint(1, min(len(user_ids), 10))
+    lucky_users = random.sample(user_ids, num_users)
+
+    return {user_id: random.choice(discounts) for user_id in lucky_users}
+
+
+@connect_to_database
+def get_users_with_debts(cursor):
+    cursor.execute('SELECT user_id FROM Account WHERE amount < 0')
+    for i in cursor.fetchall():
+        cursor.execute('SELECT name, surname FROM User WHERE id = ?', (i[0],))
+        user_name = cursor.fetchall()
+    return user_name
+
+
+def get_full_names_of_users_with_debts():
+    full_names = []
+    for name, surname in get_users_with_debts():
+        full_names.append(name + ' ' + surname)
+    return full_names
+
+
+@connect_to_database
+def get_bank_with_biggest_capital(cursor):
+    cursor.execute('''SELECT b.name FROM Bank b JOIN Account a ON b.id = a.bank_id GROUP BY b.id 
+                        ORDER BY SUM(a.amount) DESC LIMIT 1''')
+
+    bank_with_biggest_capital = cursor.fetchone()[0]
+    print(bank_with_biggest_capital)
+
+    return bank_with_biggest_capital if bank_with_biggest_capital else None
+
+
+@connect_to_database
+def get_bank_serving_oldest_client(cursor):
+    cursor.execute('''SELECT b.name FROM Bank b JOIN Account a ON b.id = a.bank_id JOIN User u ON a.user_id = u.id
+                        ORDER BY u.birth_day ASC LIMIT 1''')
+
+    bank_serving_oldest_client = cursor.fetchone()[0]
+    return bank_serving_oldest_client if bank_serving_oldest_client else None
+
+
+@connect_to_database
+def get_bank_with_most_unique_outbound_transactions(cursor):
+    cursor.execute('''SELECT b.name FROM Bank b JOIN Account a ON b.Id = a.bank_id 
+                        JOIN Transactions t ON a.Id = t.account_sender_id WHERE t.bank_sender_name = b.name 
+                        GROUP BY b.id ORDER BY COUNT(DISTINCT a.user_id) DESC LIMIT 1''')
+
+    bank_with_most_unique_users = cursor.fetchone()[0]
+    return bank_with_most_unique_users if bank_with_most_unique_users else None
+
+
+def delete_user_or_account_row(data_to_delete, del_user):
+    for i in data_to_delete:
+        delete_user(i) if del_user else delete_account(i)
+
+
+@connect_to_database
+def delete_users_and_accounts_with_missing_info(cursor):
+    cursor.execute('''SELECT id FROM User WHERE name IS NULL OR surname IS NULL OR birth_day IS NULL''')
+    delete_user_or_account_row([i[0] for i in cursor.fetchall()], True)
+
+    cursor.execute('''SELECT id FROM Account WHERE user_id IS NULL OR type IS NULL OR account_Number IS NULL 
+                        OR bank_id IS NULL OR currency IS NULL OR amount IS NULL OR status IS NULL ''')
+    delete_user_or_account_row([i[0] for i in cursor.fetchall()], False)
+
+
+@connect_to_database
+def search_transactions_for_user_past_3_months(cursor, user_id):
+    cursor.execute('''SELECT * FROM Transactions WHERE account_sender_id OR account_receiver_id = ? 
+    AND datetime >= ?''', (user_id, datetime.now() - timedelta(days=90)))
+    return cursor.fetchall()
+
+
 #####################################################################################
 # Example usage
 user_data_1 = {
@@ -201,7 +288,7 @@ user_data_2 = ('Jane Candy', '1995-02-02', '789,012')
 
 user_data_3 = ('Katie Ellison', '2000-08-03', '864,682')
 
-bank = ['Bank 8', 'Bank 7']
+bank = ['Bank 8', 'Bank po']
 
 dat = {
     'user_id': 1,
@@ -209,7 +296,7 @@ dat = {
     'account_number': '12345678',
     'bank_id': 1,
     'currency': 'USD',
-    'amount': 2000,
+    'amount': -2000,
     'status': 'gold'
 }
 ###################################################################################
@@ -230,12 +317,12 @@ data = {
     'birth_day': '2000-01-01',  # Modify this field based on your requirements
     'accounts': '987,674',  # Modify this field based on your requirements
     'bank_name': 'Ggbank',
-    'user_id': 1,
-    'type': 'credit',
+    'user_id': 123,
+    'type': 'debit',
     'account_number': '12345778',
     'bank_id': 1,
     'currency': 'USD',
-    'amount': 13400,
+    'amount': -13400,
     'status': 'gold'
 }
 
@@ -254,4 +341,22 @@ data = {
 
 # Transfer
 
-perform_transfer(1, 2, 1023)
+perform_transfer(3, 4, 23)
+
+##############Part 4#########################################################
+## 1
+get_discount_for_random_users()
+## 2
+get_full_names_of_users_with_debts()
+## 3
+print(get_bank_with_biggest_capital())
+## 4
+print(get_bank_serving_oldest_client())
+## 5
+print(get_bank_with_most_unique_outbound_transactions())
+
+## 6
+# delete_users_and_accounts_with_missing_info()
+
+print(search_transactions_for_user_past_3_months(3))
+print(search_transactions_for_user_past_3_months(4))

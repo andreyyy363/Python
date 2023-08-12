@@ -28,8 +28,10 @@ def validate_account_number(number):
         raise ValueError(f'Too {"many" if len(number) > 18 else "little" if len(number) < 18 else ""} '
                          f'chars in account number!')
 
-    if not number.startswith("ID--") or not re.match(r'^[A-Za-z]{1,3}-\d+-', number[5:]):
-        raise ValueError('Account number has the wrong format or broken ID pattern!')
+    if not number.startswith("ID--"):
+        raise ValueError('Account number has the wrong format')
+    if not re.match(r'^[A-Za-z]{1,3}-\d+-', number[5:]):
+        raise ValueError('Account number has broken ID pattern!')
 
     return number
 
@@ -72,8 +74,7 @@ print(validate_current_time('2023-11-11 23:32:10'))
 #################################################################################################################
 
 try:
-    account_number = 'ID--jq?43254765-99'
-    number = validate_account_number(account_number)
-    print("Account number is valid:", number)
+    account_number = validate_account_number('ID--jq?43254765-99')
+    print("Account number is valid:", account_number)
 except ValueError as e:
     print(e)
