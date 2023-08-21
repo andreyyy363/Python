@@ -38,8 +38,8 @@ def validate_account_number(number):
 
 ##############################################################################################################
 
-full_name = 'John123 Doe!?'
-name, surname = validate_user_name(full_name)
+FULL_NAME = 'John123 Doe!?'
+name, surname = validate_user_name(FULL_NAME)
 print("Name:", name)
 print("Surname:", surname)
 
@@ -50,28 +50,27 @@ ALLOWED_CURRENCIES = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'S
 ALLOWED_STATUSES = {'gold', 'silver', 'platinum'}
 
 try:
-    account_type = 'savings'
-    validate_field_with_strict_set_of_values(ALLOWED_ACCOUNT_TYPES, account_type, 'account_type')
+    ACCOUNT_TYPE = 'savings'
+    validate_field_with_strict_set_of_values(ALLOWED_ACCOUNT_TYPES, ACCOUNT_TYPE, 'account_type')
 except ValueError as e:
     print(e)
 
 try:
-    currency = 'INR'
-    validate_field_with_strict_set_of_values(ALLOWED_CURRENCIES, currency, 'currency')
+    CURRENCY = 'INR'
+    validate_field_with_strict_set_of_values(ALLOWED_CURRENCIES, CURRENCY, 'currency')
 except ValueError as e:
     print(e)
 
 try:
-    status = 'iron'
-    validate_field_with_strict_set_of_values(ALLOWED_STATUSES, status, 'status')
+    STATUS = 'iron'
+    validate_field_with_strict_set_of_values(ALLOWED_STATUSES, STATUS, 'status')
 except ValueError as e:
     print(e)
 
-#################################################################################################################
 
 print(validate_current_time('2023-11-11 23:32:10'))
+print(validate_current_time(None))
 
-#################################################################################################################
 
 try:
     account_number = validate_account_number('ID--jq?43254765-99')

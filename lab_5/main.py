@@ -118,5 +118,5 @@ def make_action():
 
 if __name__ == "__main__":
     if not os.path.exists('bank.db'):
-        subprocess.run(['python', '001__initial_db_setup.py', '--uniqueness'])
+        subprocess.run(['python', '001__initial_db_setup.py', '--uniqueness'], check=True)
     make_action()

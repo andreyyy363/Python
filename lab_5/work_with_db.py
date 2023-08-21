@@ -2,9 +2,10 @@ import csv
 import re
 import random
 import logging
-from connect_to_db import connect_to_database
 from datetime import datetime, timedelta
 import freecurrencyapi
+from connect_to_db import connect_to_database
+
 
 API_KEY = 'fca_live_T6dRB6eXL7imXrxOpBdiZiUTaXjnzigIAeLL4cDi'
 logging.basicConfig(filename='file.log', level=logging.DEBUG,
@@ -126,7 +127,7 @@ def add_data_from_csv(path):
 
     :param path: The path to the CSV file containing data.
     """
-    with open(path, 'r', newline='') as csvfile:
+    with open(path, 'r', newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile, delimiter=';')
         for i in reader:
             user_id = i.get('user_id')
@@ -397,7 +398,7 @@ def get_users_with_debts(cursor):
     Get a list of users with negative account balances.
 
     :param cursor: The database cursor to execute the SQL command.
-    :return user_name: A list of tuples containing user names and surnames for users with negative account balances.
+    :return user_name: A list of tuples containing usernames and surnames for users with negative account balances.
     """
     cursor.execute('SELECT user_id FROM Account WHERE amount < 0')
     user_name = []
