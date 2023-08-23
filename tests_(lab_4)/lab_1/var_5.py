@@ -35,6 +35,7 @@ def sum_of_positive_elements(arr, arr_size):
     print('Sum of positive elements in columns:')
     print(sum_of_positive)
     print('-----------------------------------')
+    return sum_of_positive
 
 
 # Exercise 2
@@ -60,10 +61,4 @@ def min_sum(arr, arr_size):
     print('Sums of diagonal elements parallel\nto the side diagonal:')
     print(sum_of_diagonals, '- min:', min_s)
     print('-----------------------------------')
-
-
-size = input('Enter the size of the array: ')
-array = generating_random_array(int(size))
-print_array(array)
-sum_of_positive_elements(array, int(size))
-min_sum(array, int(size))
+    return min_s

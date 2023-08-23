@@ -18,47 +18,24 @@ def test_generating_random_array():
             assert isinstance(j, int)
 
 
-def test_sum_of_positive():
-    # Test for all positive elements
-    input_arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    input_size = 3
+@pytest.mark.parametrize('input_arr, input_size, expected',
+                         [
+                             ([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3, [12, 15, 18]),
+                             ([[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]], 3, [0, 0, 0]),
+                             ([[1, 2, -3], [-4, 5, -6], [7, 8, 9]], 3, [0, 15, 0])
+
+                         ])
+def test_sum_of_positive(input_arr, input_size, expected):
     actual = sum_of_positive_elements(input_arr, input_size)
-    expected = [12, 15, 18]
-    assert actual == expected
-
-    # Test for all negative elements
-    input_arr = [[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]]
-    input_size = 3
-    actual = sum_of_positive_elements(input_arr, input_size)
-    expected = [0, 0, 0]
-    assert actual == expected
-
-    # Test for mixed values
-    input_arr = [[1, 2, -3], [-4, 5, -6], [7, 8, 9]]
-    input_size = 3
-    actual = sum_of_positive_elements(input_arr, input_size)
-    expected = [0, 15, 0]
     assert actual == expected
 
 
-def test_min_sum():
-    # Test for all positive elements
-    input_arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    input_size = 3
+@pytest.mark.parametrize('input_arr, input_size, expected',
+                         [
+                             ([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3, 1),
+                             ([[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]], 3, 1),
+                             ([[-4, 8, -6, 10], [15, 1, 3, -7], [-9, -5, 19, -1], [8, 6, -13, 0]], 4, 0)
+                         ])
+def test_min_sum(input_arr, input_size, expected):
     actual = min_sum(input_arr, input_size)
-    expected = 1
-    assert actual == expected
-
-    # Test for all negative elements
-    input_arr = [[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]]
-    input_size = 3
-    actual = min_sum(input_arr, input_size)
-    expected = 1
-    assert actual == expected
-
-    # Test for mixed values
-    input_arr = [[-4, 8, -6, 10], [15, 1, 3, -7], [-9, -5, 19, -1], [8, 6, -13, 0]]
-    input_size = 4
-    actual = min_sum(input_arr, input_size)
-    expected = 0
     assert actual == expected

@@ -20,29 +20,21 @@ def test_generating_random_array():
             assert isinstance(j, int)
 
 
-def test_find_zero():
-    # Test for array with zero
-    input_arr = [[1, 2, 3], [4, 0, 6], [7, 8, 9]]
+@pytest.mark.parametrize('input_arr, expected',
+                         [
+                             ([[1, 2, 3], [4, 0, 6], [7, 8, 9]], True),
+                             ([[1, 2, 3], [4, 5, 6], [7, 8, 9]], False)
+                         ])
+def test_find_zero(input_arr, expected):
     actual = find_zero(input_arr)
-    expected = True
-    assert actual == expected
-
-    # Test for array without zero
-    input_arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    actual = find_zero(input_arr)
-    expected = False
     assert actual == expected
 
 
-def test_find_sum_of_negative_paired_elements():
-    # Test for random values in array
-    input_arr = [[-2, -3, 4], [-6, 6, -9], [7, -8, -4]]
+@pytest.mark.parametrize('input_arr, expected',
+                         [
+                             ([[-2, -3, 4], [-6, 6, -9], [7, -8, -4]], [-8, -6, -4, -2]),
+                             ([[1, 2, 3], [4, 5, 6], [7, 8, 9]], [])
+                         ])
+def test_find_sum_of_negative_paired_elements(input_arr, expected):
     actual = find_sum_of_negative_paired_elements(input_arr)
-    expected = [-8, -6, -4, -2]
-    assert actual == expected
-
-    # Test for all positive elements
-    input_arr = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    actual = find_sum_of_negative_paired_elements(input_arr)
-    expected = []
     assert actual == expected

@@ -38,6 +38,7 @@ def find_zero(arr):
     if not found:
         print('Null elements not found.')
     print('-----------------------------------')
+    return found
 
 
 # Exercise 2
@@ -52,12 +53,4 @@ def find_sum_of_negative_paired_elements(arr):
     print('Sum of even negative elements\narranged in descending order:')
     print(sum_of_elements)
     print('-----------------------------------')
-
-
-print_info()
-n = input('Enter the number of rows: ')
-m = input('Enter the number of columns: ')
-array = generate_random_array(int(n), int(m))
-print_array(array)
-find_zero(array)
-find_sum_of_negative_paired_elements(array)
+    return sum_of_elements
