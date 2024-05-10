@@ -1,11 +1,11 @@
 import os
 import subprocess
-from work_with_db import (add_user, add_bank, add_account, add_data_from_csv,
-                          modify_user, modify_bank, modify_account, delete_user, delete_bank, delete_account,
+from work_with_db import (add_data_from_csv, modify_data,
                           perform_transfer, get_discount_for_random_users, get_full_names_of_users_with_debts,
                           get_bank_serving_oldest_client, get_bank_with_biggest_capital,
                           get_bank_with_most_unique_outbound_transactions, delete_users_and_accounts_with_missing_info,
-                          search_transactions_for_user_past_3_months)
+                          filter_transactions_past_3_months, delete_from_db)
+from work_with_db import (split_full_name_in_dict, add_data)
 
 
 def print_stripe():
@@ -48,52 +48,68 @@ def make_action():
                             'birth_day': '1990-01-01',
                             'accounts': '123,456'
                         }
-                        user_data_2 = ('Jane Candy', '1995-02-02', '789,012')
-                        user_data_3 = ('Katie Ellison', '2000-08-03', '864,682')
-                        add_user(user_data_1, user_data_2, user_data_3)
+                        user_data_2 = {
+                            'user_full_name': 'Jane Candy',
+                            'birth_day': '1995-02-02',
+                            'accounts': '789,012'
+                        }
+                        user_data_3 = {
+                            'user_full_name': 'Katie Ellison',
+                            'birth_day': '2000-08-03',
+                            'accounts': '864,682'
+                        }
+
+                        user_data_1, user_data_2, user_data_3 = split_full_name_in_dict(user_data_1,
+                                                                                        user_data_2, user_data_3)
+                        add_data('User', user_data_1, user_data_2, user_data_3)
                     case 2:
-                        bank = ['Bank 8', 'Bank po']
-                        add_bank(*bank)
+                        bank_data_1 = {'name': 'Crazy Bank'}
+                        bank_data_2 = {'name': 'Angry Bank'}
+
+                        add_data('Bank', bank_data_1, bank_data_2)
                     case 3:
                         account_data = {'user_id': 1, 'type': 'credit', 'account_number': '12345678', 'bank_id': 1,
                                         'currency': 'USD', 'amount': -2000, 'status': 'gold'}
-                        add_account(account_data)
+
+                        add_data('Account', account_data)
             case 2:
-                add_data_from_csv(r'G:\Projects\Python\lab_5\test_data.csv')
+                add_data_from_csv(r'D:\Projects\Python\lab_5\test_data.csv')
             case 3:
                 choice = input('What would you like to modify ([1] - user, [2] - bank, [3] - account)? ')
-                data = {
-                    'name': 'New Name',  # Modify this field based on your requirements
-                    'surname': 'New Surname',  # Modify this field based on your requirements
-                    'birth_day': '2000-01-01',  # Modify this field based on your requirements
-                    'accounts': '987,674',  # Modify this field based on your requirements
-                    'bank_name': 'Bank O',
-                    'user_id': 123,
-                    'type': 'debit',
-                    'account_number': '12345778',
-                    'bank_id': 1,
-                    'currency': 'USD',
-                    'amount': -13400,
-                    'status': 'gold'
-                }
                 match int(choice):
                     case 1:
-                        modify_user(1, data)
+                        new_user_data = {
+                            'name': 'New Name',
+                            'surname': 'New Surname',
+                            'birth_day': '2000-01-01',
+                            'accounts': '987,674',
+                        }
+                        modify_data('User', 1, new_user_data)
                     case 2:
-                        modify_bank(4, data)
+                        new_bank_data = {'name': 'New Bank'}
+                        modify_data('Bank', 4, new_bank_data)
                     case 3:
-                        modify_account(1, data)
+                        new_account_data = {
+                            'user_id': 123,
+                            'type': 'debit',
+                            'account_number': '12345778',
+                            'bank_id': 1,
+                            'currency': 'USD',
+                            'amount': -13400,
+                            'status': 'gold'
+                        }
+                        modify_data('Account', 1, new_account_data)
             case 4:
                 choice = input('What would you like to add ([1] - user, [2] - bank, [3] - account)? ')
                 match int(choice):
                     case 1:
-                        delete_user(2)
+                        delete_from_db(2, 'User')
                     case 2:
-                        delete_bank(1)
+                        delete_from_db(1, 'Bank')
                     case 3:
-                        delete_account(3)
+                        delete_from_db(1, 'Account')
             case 5:
-                perform_transfer(3, 4, 23)
+                perform_transfer(3, 5, 100)
             case 6:
                 print(get_discount_for_random_users())
             case 7:
@@ -107,8 +123,8 @@ def make_action():
             case 11:
                 delete_users_and_accounts_with_missing_info()
             case 12:
-                print(search_transactions_for_user_past_3_months(3))
-                print(search_transactions_for_user_past_3_months(4))
+                print(filter_transactions_past_3_months(3))
+                print(filter_transactions_past_3_months(1))
             case 13:
                 os.remove('bank.db')
                 break

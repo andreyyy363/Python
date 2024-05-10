@@ -23,6 +23,7 @@ uses:
   - timedelta
   - freecurrencyapi
   - logging
+  - dotenv
 
 pep8:
     # style checking

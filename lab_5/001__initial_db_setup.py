@@ -3,6 +3,11 @@ import argparse
 
 
 def set_argparse():
+    """
+    Parses command-line arguments to check if the 'uniqueness' flag is set.
+
+    :return: (bool) True if the 'uniqueness' flag is set, False otherwise.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--uniqueness', action='store_true')
     args = parser.parse_args()
@@ -10,13 +15,19 @@ def set_argparse():
 
 
 def create_tables(unique_fields):
+    """
+    Creates tables in the SQLite database 'bank.db'.
+    The tables created are 'Bank', 'Transactions', 'User', and 'Account'.
+
+    :param unique_fields: (bool) If True, the 'name' and 'surname' fields in the 'User' table will be unique.
+    :return: None
+    """
     conn = sqlite3.connect('bank.db')
 
     # Table "Bank"
-    conn.execute('''CREATE TABLE IF NOT EXISTS Bank (
+    conn.execute('''CREATE TABLE IF NOT EXISTS Banks (
                     id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL UNIQUE
-                )''')
+                    name TEXT NOT NULL UNIQUE)''')
 
     # Table "Transactions"
     conn.execute('''CREATE TABLE IF NOT EXISTS Transactions (
@@ -27,30 +38,27 @@ def create_tables(unique_fields):
                     account_receiver_id INTEGER NOT NULL,
                     sent_currency TEXT NOT NULL,
                     sent_amount REAL NOT NULL,
-                    datetime TEXT
-                )''')
+                    datetime TEXT)''')
 
     # Table "User"
-    conn.execute('''CREATE TABLE IF NOT EXISTS User (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL {unique_name},
-                    surname TEXT NOT NULL {unique_surname},
-                    birth_day TEXT,
-                    accounts TEXT NOT NULL
-                )'''.format(unique_name='UNIQUE' if unique_fields else '',
-                            unique_surname='UNIQUE' if unique_fields else ''))
+    unique = 'UNIQUE' if unique_fields else ''
+    conn.execute(f'''CREATE TABLE IF NOT EXISTS Users (
+                        id INTEGER PRIMARY KEY, 
+                        name TEXT NOT NULL {unique}, 
+                        surname TEXT NOT NULL {unique}, 
+                        birth_day TEXT, 
+                        accounts TEXT NOT NULL)''')
 
     # Table "Account"
-    conn.execute('''CREATE TABLE IF NOT EXISTS Account (
+    conn.execute('''CREATE TABLE IF NOT EXISTS Accounts (
                     id INTEGER PRIMARY KEY,
                     user_id INTEGER NOT NULL,
                     type TEXT NOT NULL,
-                    account_Number INTEGER NOT NULL UNIQUE,
+                    account_number INTEGER NOT NULL UNIQUE,
                     bank_id INTEGER NOT NULL,
                     currency TEXT NOT NULL,
                     amount REAL NOT NULL,
-                    status TEXT
-                )''')
+                    status TEXT)''')
 
     conn.commit()
     conn.close()
