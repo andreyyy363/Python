@@ -24,22 +24,6 @@ def create_tables(unique_fields):
     """
     conn = sqlite3.connect('bank.db')
 
-    # Table "Bank"
-    conn.execute('''CREATE TABLE IF NOT EXISTS Banks (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL UNIQUE)''')
-
-    # Table "Transactions"
-    conn.execute('''CREATE TABLE IF NOT EXISTS Transactions (
-                    id INTEGER PRIMARY KEY,
-                    bank_sender_name TEXT NOT NULL,
-                    account_sender_id INTEGER NOT NULL,
-                    bank_receiver_name TEXT NOT NULL,
-                    account_receiver_id INTEGER NOT NULL,
-                    sent_currency TEXT NOT NULL,
-                    sent_amount REAL NOT NULL,
-                    datetime TEXT)''')
-
     # Table "User"
     unique = 'UNIQUE' if unique_fields else ''
     conn.execute(f'''CREATE TABLE IF NOT EXISTS Users (
@@ -48,6 +32,11 @@ def create_tables(unique_fields):
                         surname TEXT NOT NULL {unique}, 
                         birth_day TEXT, 
                         accounts TEXT NOT NULL)''')
+
+    # Table "Bank"
+    conn.execute('''CREATE TABLE IF NOT EXISTS Banks (
+                    bank_id INTEGER PRIMARY KEY,
+                    bank_name TEXT NOT NULL UNIQUE)''')
 
     # Table "Account"
     conn.execute('''CREATE TABLE IF NOT EXISTS Accounts (
@@ -60,6 +49,16 @@ def create_tables(unique_fields):
                     amount REAL NOT NULL,
                     status TEXT)''')
 
+    # Table "Transactions"
+    conn.execute('''CREATE TABLE IF NOT EXISTS Transactions (
+                    id INTEGER PRIMARY KEY,
+                    bank_sender_name TEXT NOT NULL,
+                    account_sender_id INTEGER NOT NULL,
+                    bank_receiver_name TEXT NOT NULL,
+                    account_receiver_id INTEGER NOT NULL,
+                    sent_currency TEXT NOT NULL,
+                    sent_amount REAL NOT NULL,
+                    datetime TEXT)''')
     conn.commit()
     conn.close()
 

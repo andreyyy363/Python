@@ -1,11 +1,13 @@
 import os
 import subprocess
-from work_with_db import (add_data_from_csv, modify_data,
+from work_with_db import (modify_data, add_table_data_from_csv,
                           perform_transfer, get_discount_for_random_users, get_full_names_of_users_with_debts,
                           get_bank_serving_oldest_client, get_bank_with_biggest_capital,
                           get_bank_with_most_unique_outbound_transactions, delete_users_and_accounts_with_missing_info,
                           filter_transactions_past_3_months, delete_from_db)
 from work_with_db import (split_full_name_in_dict, add_data)
+from validations import run_all_validations
+from const import DB_USER_FIELDS, DB_ACCOUNT_FIELDS, DB_BANK_FIELDS, REQUIRED_USER_FIELDS
 
 
 def print_stripe():
@@ -29,8 +31,9 @@ def print_menu():
     print('[10] - Get bank name with the highest number of unique users which performed outbound transactions.')
     print('[11] - Delete users and account that don’t have full information.')
     print('[12] - Get transactions of particular user for past 3 months.')
-    print('[13] - Delete DB and stop program.')
-    print('[14] - Stop program.')
+    print('[13] - Run all validations.')
+    print('[14] - Delete DB and stop program.')
+    print('[15] - Stop program.')
     print_stripe()
 
 
@@ -61,19 +64,22 @@ def make_action():
 
                         user_data_1, user_data_2, user_data_3 = split_full_name_in_dict(user_data_1,
                                                                                         user_data_2, user_data_3)
-                        add_data('User', user_data_1, user_data_2, user_data_3)
+                        add_data('Users', DB_USER_FIELDS, user_data_1, user_data_2, user_data_3)
                     case 2:
-                        bank_data_1 = {'name': 'Crazy Bank'}
-                        bank_data_2 = {'name': 'Angry Bank'}
+                        bank_data_1 = {'bank_id': 1, 'bank_name': 'Crazy Bank'}
+                        bank_data_2 = {'bank_id': 2, 'bank_name': 'Angry Bank'}
 
-                        add_data('Bank', bank_data_1, bank_data_2)
+                        add_data('Banks', DB_BANK_FIELDS, [bank_data_1, bank_data_2])
                     case 3:
                         account_data = {'user_id': 1, 'type': 'credit', 'account_number': '12345678', 'bank_id': 1,
                                         'currency': 'USD', 'amount': -2000, 'status': 'gold'}
 
-                        add_data('Account', account_data)
+                        add_data('Accounts', DB_ACCOUNT_FIELDS, account_data)
             case 2:
-                add_data_from_csv(r'D:\Projects\Python\lab_5\test_data.csv')
+                path = r'D:\Projects\Python\lab_5\test_data.csv'
+                add_table_data_from_csv(path, 'Users', REQUIRED_USER_FIELDS)
+                add_table_data_from_csv(path, 'Banks', DB_BANK_FIELDS)
+                add_table_data_from_csv(path, 'Accounts', DB_ACCOUNT_FIELDS)
             case 3:
                 choice = input('What would you like to modify ([1] - user, [2] - bank, [3] - account)? ')
                 match int(choice):
@@ -84,10 +90,10 @@ def make_action():
                             'birth_day': '2000-01-01',
                             'accounts': '987,674',
                         }
-                        modify_data('User', 1, new_user_data)
+                        modify_data('Users', 1, new_user_data)
                     case 2:
-                        new_bank_data = {'name': 'New Bank'}
-                        modify_data('Bank', 4, new_bank_data)
+                        new_bank_data = {'bank_id': 4, 'bank_name': 'New Bank'}
+                        modify_data('Banks', 4, new_bank_data)
                     case 3:
                         new_account_data = {
                             'user_id': 123,
@@ -98,7 +104,7 @@ def make_action():
                             'amount': -13400,
                             'status': 'gold'
                         }
-                        modify_data('Account', 1, new_account_data)
+                        modify_data('Accounts', 1, new_account_data)
             case 4:
                 choice = input('What would you like to add ([1] - user, [2] - bank, [3] - account)? ')
                 match int(choice):
@@ -109,7 +115,7 @@ def make_action():
                     case 3:
                         delete_from_db(1, 'Account')
             case 5:
-                perform_transfer(3, 5, 100)
+                perform_transfer(5, 6, 100)
             case 6:
                 print(get_discount_for_random_users())
             case 7:
@@ -123,12 +129,14 @@ def make_action():
             case 11:
                 delete_users_and_accounts_with_missing_info()
             case 12:
-                print(filter_transactions_past_3_months(3))
-                print(filter_transactions_past_3_months(1))
+                print(filter_transactions_past_3_months(4))
+                print(filter_transactions_past_3_months(5))
             case 13:
+                run_all_validations()
+            case 14:
                 os.remove('bank.db')
                 break
-            case 14:
+            case 15:
                 break
 
 

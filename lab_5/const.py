@@ -1,6 +1,39 @@
-USER_FIELDS = ('user_full_name', 'birth_day', 'account_number')
-BANK_FIELDS = ('bank_id', 'bank_name')
-ACCOUNT_FIELDS = ('user_id', 'type', 'account_number', 'bank_id', 'currency', 'amount')
+NAME = 'name'
+SURNAME = 'surname'
+FULL_NAME = 'user_full_name'
+BIRTH_DAY = 'birth_day'
+ACCOUNTS = 'accounts'
+BANK_NAME = 'bank_name'
+USER_ID = 'user_id'
+TYPE = 'type'
+ACCOUNT_NUMBER = 'account_number'
+BANK_ID = 'bank_id'
+CURRENCY = 'currency'
+AMOUNT = 'amount'
+STATUS = 'status'
+ID = 'id'
+FORMAT = '%Y-%m-%d %H:%M:%S'
+DATETIME = 'datetime'
+USERS_TABLE = 'Users'
+BANKS_TABLE = 'Banks'
+ACCOUNTS_TABLE = 'Accounts'
+TRANSACTIONS_TABLE = 'Transactions'
+BALANCE = 'balance'
+DATA = 'data'
+BANK_SENDER_NAME = 'bank_sender_name'
+ACCOUNT_SENDER_ID = 'account_sender_id'
+
+REQUIRED_USER_FIELDS = (FULL_NAME, BIRTH_DAY, ACCOUNTS)
+REQUIRED_BANK_FIELDS = (BANK_ID, BANK_NAME)
+REQUIRED_ACCOUNT_FIELDS = (USER_ID, TYPE, ACCOUNT_NUMBER, BANK_ID, CURRENCY, AMOUNT)
+
+REQUIRED_FIELDS = (FULL_NAME, BIRTH_DAY, ACCOUNTS, BANK_ID, BANK_NAME, USER_ID,
+                   TYPE, ACCOUNT_NUMBER, CURRENCY, AMOUNT)
+
+DB_USER_FIELDS = (NAME, SURNAME, BIRTH_DAY, ACCOUNTS)
+DB_BANK_FIELDS = (BANK_ID, BANK_NAME)
+DB_ACCOUNT_FIELDS = (USER_ID, TYPE, ACCOUNT_NUMBER, BANK_ID, CURRENCY, AMOUNT, STATUS)
+
 DISCOUNTS = (25, 30, 50)
 MIN_USERS = 1
 MAX_USERS = 10

@@ -66,49 +66,58 @@ def validate_account_number(number):
     return number
 
 
-FULL_NAME_1 = 'John123 Doe!?'
-FULL_NAME_2 = 'John123!?'
-try:
-    name, surname = validate_user_name(FULL_NAME_1)
-    print("Name:", name)
-    print("Surname:", surname)
-except ValueError as e:
-    print(e)
+def validate_balance(user_data, account_id, amount):
+    if user_data is None:
+        raise ValueError(f'Account with id {account_id} not found.')
 
-try:
-    name, surname = validate_user_name(FULL_NAME_2)
-    print("Name:", name)
-    print("Surname:", surname)
-except ValueError as e:
-    print(e)
+    if user_data[0] < amount:
+        raise ValueError('Insufficient balance.')
 
-ALLOWED_ACCOUNT_TYPES = {'credit', 'debit'}
-ALLOWED_CURRENCIES = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD'}
-ALLOWED_STATUSES = {'gold', 'silver', 'platinum'}
 
-try:
-    ACCOUNT_TYPE = 'savings'
-    validate_field_with_strict_set_of_values(ALLOWED_ACCOUNT_TYPES, ACCOUNT_TYPE, 'account_type')
-except ValueError as e:
-    print(e)
+def run_all_validations():
+    FULL_NAME_1 = 'John123 Doe!?'
+    FULL_NAME_2 = 'John123!?'
+    try:
+        name, surname = validate_user_name(FULL_NAME_1)
+        print("Name:", name)
+        print("Surname:", surname)
+    except ValueError as e:
+        print(e)
 
-try:
-    CURRENCY = 'INR'
-    validate_field_with_strict_set_of_values(ALLOWED_CURRENCIES, CURRENCY, 'currency')
-except ValueError as e:
-    print(e)
+    try:
+        name, surname = validate_user_name(FULL_NAME_2)
+        print("Name:", name)
+        print("Surname:", surname)
+    except ValueError as e:
+        print(e)
 
-try:
-    STATUS = 'iron'
-    validate_field_with_strict_set_of_values(ALLOWED_STATUSES, STATUS, 'status')
-except ValueError as e:
-    print(e)
+    ALLOWED_ACCOUNT_TYPES = {'credit', 'debit'}
+    ALLOWED_CURRENCIES = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD'}
+    ALLOWED_STATUSES = {'gold', 'silver', 'platinum'}
 
-print(validate_current_time('2023-11-11 23:32:10'))
-print(validate_current_time(None))
+    try:
+        ACCOUNT_TYPE = 'savings'
+        validate_field_with_strict_set_of_values(ALLOWED_ACCOUNT_TYPES, ACCOUNT_TYPE, 'account_type')
+    except ValueError as e:
+        print(e)
 
-try:
-    account_number = validate_account_number('ID--AB-12345679012')
-    print('Account number is valid:', account_number)
-except ValueError as e:
-    print(e)
+    try:
+        CURRENCY = 'INR'
+        validate_field_with_strict_set_of_values(ALLOWED_CURRENCIES, CURRENCY, 'currency')
+    except ValueError as e:
+        print(e)
+
+    try:
+        STATUS = 'iron'
+        validate_field_with_strict_set_of_values(ALLOWED_STATUSES, STATUS, 'status')
+    except ValueError as e:
+        print(e)
+
+    print(validate_current_time('2023-11-11 23:32:10'))
+    print(validate_current_time(None))
+
+    try:
+        account_number = validate_account_number('ID--AB-12345679012')
+        print('Account number is valid:', account_number)
+    except ValueError as e:
+        print(e)

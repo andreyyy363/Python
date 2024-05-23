@@ -1,5 +1,5 @@
-user_full_name;user_id;birth_day;account_number;bank_id;bank_name;type;accounts;currency;amount;status
-Alice Johnson;1;14.10.2000;"";10;"";credit;123,456;"";1000;gold
+user_full_name;user_id;birth_day;accounts;bank_id;bank_name;type;account_number;currency;amount;status
+Alice Johnson;1;14.10.2000;"";10;456;credit;123,456;"";1000;gold
 Bob Smith;2;22.07.1988;7895643;11;Bank B;debit;789,012;EUR;500;silver
 Carol Davis;3;05.11.1993;4564564;2;Bank C;credit;154,568;"";800;gold
 David Williams;4;30.09.1990;23445645;4;Bank D;debit;220,124;USD;1200;silver
