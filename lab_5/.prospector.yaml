@@ -24,6 +24,7 @@ uses:
   - freecurrencyapi
   - logging
   - dotenv
+  - collections
 
 pep8:
     # style checking
@@ -41,6 +42,7 @@ pylint:
         # no 'mark' member
         ignored-classes: pytest
     disable:
+      - no-value-for-parameter
         # Too many lines in module
 #        - C0302
         # Used * or ** magic

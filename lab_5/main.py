@@ -6,7 +6,6 @@ from work_with_db import (modify_data, add_table_data_from_csv,
                           get_bank_with_most_unique_outbound_transactions, delete_users_and_accounts_with_missing_info,
                           filter_transactions_past_3_months, delete_from_db)
 from work_with_db import (split_full_name_in_dict, add_data)
-from validations import run_all_validations
 from const import DB_USER_FIELDS, DB_ACCOUNT_FIELDS, DB_BANK_FIELDS, REQUIRED_USER_FIELDS
 
 
@@ -31,9 +30,8 @@ def print_menu():
     print('[10] - Get bank name with the highest number of unique users which performed outbound transactions.')
     print('[11] - Delete users and account that don’t have full information.')
     print('[12] - Get transactions of particular user for past 3 months.')
-    print('[13] - Run all validations.')
-    print('[14] - Delete DB and stop program.')
-    print('[15] - Stop program.')
+    print('[13] - Delete DB and stop program.')
+    print('[14] - Stop program.')
     print_stripe()
 
 
@@ -109,11 +107,11 @@ def make_action():
                 choice = input('What would you like to add ([1] - user, [2] - bank, [3] - account)? ')
                 match int(choice):
                     case 1:
-                        delete_from_db(2, 'User')
+                        delete_from_db(2, 'Users')
                     case 2:
-                        delete_from_db(1, 'Bank')
+                        delete_from_db(1, 'Banks')
                     case 3:
-                        delete_from_db(1, 'Account')
+                        delete_from_db(1, 'Accounts')
             case 5:
                 perform_transfer(5, 6, 100)
             case 6:
@@ -132,15 +130,13 @@ def make_action():
                 print(filter_transactions_past_3_months(4))
                 print(filter_transactions_past_3_months(5))
             case 13:
-                run_all_validations()
-            case 14:
                 os.remove('bank.db')
                 break
-            case 15:
+            case 14:
                 break
 
 
 if __name__ == "__main__":
     if not os.path.exists('bank.db'):
-        subprocess.run(['python', '001__initial_db_setup.py', '--uniqueness'], check=True)
+        subprocess.run(['python', 'initial_db_setup.py', '--uniqueness'], check=True)
     make_action()

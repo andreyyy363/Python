@@ -9,9 +9,8 @@ from dotenv import load_dotenv
 from connect_to_db import connect_to_database
 from const import (DISCOUNTS, MIN_USERS, MAX_USERS, REQUIRED_FIELDS, DB_USER_FIELDS, FORMAT, DATETIME, NAME, SURNAME,
                    FULL_NAME, USERS_TABLE, ACCOUNTS_TABLE, TRANSACTIONS_TABLE, DATA, BALANCE, AMOUNT, ID, CURRENCY,
-                   BANK_ID, BIRTH_DAY, USER_ID)
+                   BANK_ID, BIRTH_DAY, USER_ID, THREE_MONTHS)
 from validations import validate_user_name, validate_balance
-
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -24,13 +23,12 @@ load_dotenv()
 client = Client(os.getenv('API_KEY'))
 
 
-# Remove
 def split_user_full_name(user_data):
     """
     Splits a user's full name into first name and surname.
 
-    :param user_full_name: The full name of the user, containing both first name and surname.
-    :return: The first name and surname as separate strings.
+    :param user_data: The data dictionary of the user, containing a full name.
+    :return: The user data dictionary with separate 'name' and 'surname' keys.
     """
     name, surname = validate_user_name(user_data.pop(FULL_NAME))
     user_data.update({NAME: name, SURNAME: surname})
@@ -44,7 +42,6 @@ def split_full_name_in_dict(*args):
     :param args: Dictionaries containing user data, including a 'user_full_name' key.
     :return: A list of new dictionaries with separate 'name' and 'surname' keys.
     """
-    logger.info('Full name has been successfully split!')
     return list(map(split_user_full_name, (args[0] if len(args) == 1 and isinstance(args[0], list) else list(args))))
 
 
@@ -55,6 +52,7 @@ def add_data(cursor, table_name, fields, *args):
 
     :param cursor: The database cursor to execute the SQL command.
     :param table_name: The name of the table to add data to.
+    :param fields: The fields to be added to the table.
     :param args: Dictionaries containing the data to be added.
     """
     data_list = (args[0] if len(args) == 1 and isinstance(args[0], list) else list(args))
@@ -85,6 +83,8 @@ def add_table_data_from_csv(path, table_name, fields):
     Adds user data from a CSV file to the database.
 
     :param path: The path to the CSV file containing user data.
+    :param table_name: The name of the table to add data to.
+    :param fields: The fields to be added to the table.
     """
     data = get_data_from_csv(path, fields)
     if table_name == USERS_TABLE:
@@ -210,8 +210,7 @@ def update_balances(sender, receiver, sender_amount, receiver_amount):
     new_sender_balance = sender[BALANCE] - sender_amount
     new_receiver_balance = receiver[BALANCE] + receiver_amount
 
-    logger.debug('New sender balance: %s, new receiver balance: %s', new_sender_balance,
-                 new_receiver_balance)
+    logger.debug('New sender balance: %s, new receiver balance: %s', new_sender_balance, new_receiver_balance)
 
     modify_data(ACCOUNTS_TABLE, sender[ID], {AMOUNT: new_sender_balance})
     modify_data(ACCOUNTS_TABLE, receiver[ID], {AMOUNT: new_receiver_balance})
@@ -267,6 +266,7 @@ def get_data_from_db(cursor, table_name, user_id=None):
 
     :param cursor: The database cursor to execute the SQL command.
     :param table_name: The name of the table to retrieve data from.
+    :param user_id: The ID of the user to filter data for (optional).
     :return: A list of dictionaries representing the data from the table.
     """
     extra_query = f'WHERE account_sender_id = {user_id} OR account_receiver_id = {user_id}'
@@ -276,12 +276,10 @@ def get_data_from_db(cursor, table_name, user_id=None):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-@connect_to_database
-def get_transactions_for_user(cursor, user_id):
+def get_transactions_for_user(user_id):
     """
     Retrieves all transactions for a specific user.
 
-    :param cursor: The database cursor to execute the SQL command.
     :param user_id: The ID of the user to retrieve transactions for.
     :return: A list of all transactions for the user.
     """
@@ -306,7 +304,7 @@ def get_users_with_debts(cursor):
     Retrieves a list of users with negative account balances.
 
     :param cursor: The database cursor to execute the SQL command.
-    :return: A list of tuples containing usernames and surnames for users with negative account balances.
+    :return: A list of tuples containing user IDs and surnames for users with negative account balances.
     """
     cursor.execute('SELECT user_id FROM Accounts WHERE amount < 0')
 
@@ -364,7 +362,9 @@ def get_bank_with_most_unique_outbound_transactions():
     """
     transactions = get_data_from_db(TRANSACTIONS_TABLE)
     banks = defaultdict(set)
-    [banks[transaction['bank_sender_name']].add(transaction['account_sender_id']) for transaction in transactions]
+
+    for transaction in transactions:
+        banks[transaction['bank_sender_name']].add(transaction['account_sender_id'])
 
     return max(banks, key=lambda bank: len(banks[bank]))
 
@@ -415,6 +415,6 @@ def filter_transactions_past_3_months(user_id):
     :return: A list of transactions for the user in the past 3 months.
     """
     transactions = get_transactions_for_user(user_id)
-    three_months_ago = datetime.now() - timedelta(days=90)
+    three_months_ago = datetime.now() - timedelta(days=THREE_MONTHS)
 
     return [transaction for transaction in transactions if transaction[DATETIME] >= three_months_ago]
