@@ -35,7 +35,6 @@ def test_sort_data(user_data_instance, gender, num_rows, expected):
 
 
 def test_convert_date_in_sorted_data(user_data_instance):
-
     actual = {'dob.date': '1990-01-15T08:00:00Z', 'registered.date': '2022-05-20T14:30:00Z'}
     expected = {'dob.date': '01/15/1990', 'registered.date': '05/20/2022, 14:30:00'}
 

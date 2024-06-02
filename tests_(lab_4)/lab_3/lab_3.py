@@ -10,11 +10,10 @@ from collections import Counter
 import copy
 
 
-
 class UserData:
     """ Class to work with user database """
     URL = 'https://randomuser.me/api/?format=csv&results=100'
-    
+
     def __init__(self):
         self.args = self.setting_argparse()
         self.logger = self.get_logger()
