@@ -32,6 +32,7 @@ def split_user_full_name(user_data):
     """
     name, surname = validate_user_name(user_data.pop(FULL_NAME))
     user_data.update({NAME: name, SURNAME: surname})
+
     return user_data
 
 
@@ -60,8 +61,8 @@ def add_data(cursor, table_name, fields, *args):
     query = f'INSERT INTO {table_name} ({", ".join(fields)}) VALUES ({', '.join(':' + field for field in fields)})'
     cursor.executemany(query, data_list)
 
-    logging.info('%s data successfully added.', table_name)
-    logging.debug('Inserted %s data: %s', table_name, data_list)
+    logger.info('%s data successfully added.', table_name)
+    logger.debug('Inserted %s data: %s', table_name, data_list)
 
 
 def get_data_from_csv(path, fields):
@@ -87,6 +88,7 @@ def add_table_data_from_csv(path, table_name, fields):
     :param fields: The fields to be added to the table.
     """
     data = get_data_from_csv(path, fields)
+
     if table_name == USERS_TABLE:
         data = split_full_name_in_dict(data)
         fields = DB_USER_FIELDS
@@ -107,7 +109,6 @@ def modify_data(cursor, table_name, modified_id, new_data):
     """
     set_clause = ', '.join(f'{key}=?' for key in new_data.keys())
     query = f'UPDATE {table_name} SET {set_clause} WHERE id=?'
-
     cursor.execute(query, (*new_data.values(), modified_id))
 
     logger.info('%s data %s successfully changed.', table_name, modified_id)
@@ -123,7 +124,7 @@ def delete_from_db(cursor, deleted_id, table_name):
     :param deleted_id: The ID of the user to be deleted.
     :param table_name: The name of the table from which the information will be deleted.
     """
-    cursor.execute(f"DELETE FROM {table_name} WHERE id IN ('id_1', 'id_2')", (deleted_id,))
+    cursor.execute(f'DELETE FROM {table_name} WHERE id = ?', (deleted_id,))
     logger.info('%s data %s successfully deleted', table_name, deleted_id)
 
 
@@ -311,8 +312,7 @@ def get_users_with_debts(cursor):
     user_name = [(row[0], row[1]) for i in cursor.fetchall() for row in
                  cursor.execute('SELECT name, surname AS full_name FROM Users WHERE id = ?', (i[0],))]
 
-    logger.debug('User names with debts: %s.', user_name)  # concat()
-
+    logger.debug('User names with debts: %s.', user_name)
     return user_name
 
 
@@ -376,7 +376,7 @@ def delete_row(data_to_delete, del_user):
     :param data_to_delete: A list of user IDs or account IDs to be deleted.
     :param del_user: If True, delete user rows; if False, delete account rows.
     """
-    map(lambda i: delete_from_db(i, del_user), data_to_delete)
+    list(map(lambda i: delete_from_db(i, del_user), data_to_delete))
     logger.debug('Deleted data: %s', data_to_delete)
 
 
@@ -390,8 +390,8 @@ def delete_users_and_accounts_with_missing_info():
     users_to_delete = [user for user in users if None in user.values()]
     accounts_to_delete = [account for account in accounts if None in account.values()]
 
-    map(lambda user: delete_row(user[ID], USERS_TABLE), users_to_delete)
-    map(lambda account: delete_row(account[ID], ACCOUNTS_TABLE), accounts_to_delete)
+    list(map(lambda user: delete_row(user[ID], USERS_TABLE), users_to_delete))
+    list(map(lambda account: delete_row(account[ID], ACCOUNTS_TABLE), accounts_to_delete))
 
     logger.info('Users and accounts data without all information has been successfully deleted.')
 

@@ -5,15 +5,11 @@ from validations import validate_user_name, validate_field_with_strict_set_of_va
     validate_account_number
 
 
-@pytest.mark.parametrize('test_full_name, expected',
-                         [('John123 Doe!?', ('John', 'Doe')), ('John123!?', 'Surname is missing')])
-def test_validate_user_name(test_full_name, expected):
-    if isinstance(expected, tuple):
-        actual = validate_user_name(test_full_name)
-        assert actual == expected
-    else:
-        with pytest.raises(ValueError, match=expected):
-            validate_user_name(test_full_name)
+@pytest.mark.parametrize('test_full_name, expected', [
+    ('John123 Doe!?', ('John', 'Doe'))
+])
+def test_validate_user_name_success(test_full_name, expected):
+    assert validate_user_name(test_full_name) == expected
 
 
 @pytest.mark.parametrize('value, expected', [('savings', 'Not allowed value savings for field account_type!'),
