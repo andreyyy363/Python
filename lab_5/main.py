@@ -1,10 +1,10 @@
 import os
 import subprocess
-from work_with_db import (modify_data, add_table_data_from_csv,
-                          perform_transfer, get_discount_for_random_users, get_full_names_of_users_with_debts,
-                          get_bank_serving_oldest_client, get_bank_with_biggest_capital,
-                          get_bank_with_most_unique_outbound_transactions, delete_users_and_accounts_with_missing_info,
-                          filter_transactions_past_3_months, delete_from_db)
+from work_with_db import (modify_data, add_table_data_from_csv, perform_transfer, get_discount_for_random_users,
+                          get_full_names_of_users_with_debts, get_bank_serving_oldest_client,
+                          get_bank_with_biggest_capital, get_bank_with_most_unique_outbound_transactions,
+                          delete_users_and_accounts_with_missing_info, filter_transactions_past_3_months,
+                          delete_from_db)
 from work_with_db import (split_full_name_in_dict, add_data)
 from const import DB_USER_FIELDS, DB_ACCOUNT_FIELDS, DB_BANK_FIELDS, REQUIRED_USER_FIELDS
 

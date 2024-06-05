@@ -58,7 +58,7 @@ def add_data(cursor, table_name, fields, *args):
     """
     data_list = (args[0] if len(args) == 1 and isinstance(args[0], list) else list(args))
 
-    query = f'INSERT INTO {table_name} ({", ".join(fields)}) VALUES ({', '.join(':' + field for field in fields)})'
+    query = f'INSERT INTO {table_name} ({", ".join(fields)}) VALUES ({", ".join(":" + field for field in fields)})'
     cursor.executemany(query, data_list)
 
     logger.info('%s data successfully added.', table_name)
