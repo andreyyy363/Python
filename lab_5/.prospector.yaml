@@ -21,9 +21,7 @@ uses:
   - random
   - datetime
   - timedelta
-  - freecurrencyapi
   - logging
-  - dotenv
   - collections
 
 pep8:
