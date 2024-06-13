@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch
 from datetime import datetime
-from validations import validate_user_name, validate_field_with_strict_set_of_values, validate_current_time, \
-    validate_account_number
+from validations import (validate_user_name, validate_field_with_strict_set_of_values, validate_current_time,
+                         validate_account_number)
 
 
 @pytest.mark.parametrize('test_full_name, expected', [
