@@ -1,0 +1,11 @@
+user_full_name;user_id;birth_day;accounts;bank_id;bank_name;type;account_number;currency;amount;status
+Alice Johnson;1;14.10.2000;"";10;456;credit;123,456;"";1000;gold
+Bob Smith;2;22.07.1988;7895643;11;Bank B;debit;789,012;EUR;500;silver
+Carol Davis;3;05.11.1993;4564564;2;Bank C;credit;154,568;"";800;gold
+David Williams;4;30.09.1990;23445645;4;Bank D;debit;220,124;USD;1200;silver
+Emma Miller;5;10.12.1985;90146456;3;Bank E;credit;275,688;EUR;1500;platinum
+Frank Wilson;6;25.04.1992;678456457;1;Bank F;debit;341,236;GBP;2000;gold
+Grace Taylor;7;17.02.1987;3453456;8;Bank G;credit;416,792;USD;2200;silver
+Henry Anderson;8;08.06.1998;13457;5;Bank H;debit;482,348;EUR;1800;gold
+Isabella Martinez;9;03.08.1991;7895754;7;Bank I;credit;547,904;GBP;2700;platinum
+Jack Weston;10;20.01.1996;"";6;Bank J;debit;613,464;"";3000

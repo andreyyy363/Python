@@ -1,0 +1,31 @@
+name: after-push checks
+run-name: lab_5
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  Custom_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.12.3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12.3"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install prospector[with_everything] pytest freecurrencyapi python-dotenv
+
+      - name: Add PYTHONPATH
+        run: echo "PYTHONPATH=\$PYTHONPATH:\$GITHUB_WORKSPACE/lab_5" >> $GITHUB_ENV
+
+      - name: linter
+        run: prospector --profile .prospector.yaml
+
+      - name: unit-tests
+        run: pytest
